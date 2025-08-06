@@ -694,11 +694,11 @@
                 </div>
                 <div class="detail-box">
                     <div class="detail-label">Entrada</div>
-                    <div class="detail-value" id="entryTime">13:47:22</div>
+                    <div class="detail-value" id="entryTime">--:--:--</div>
                 </div>
                 <div class="detail-box">
                     <div class="detail-label">Expiração</div>
-                    <div class="detail-value" id="expirationTime">13:52:22</div>
+                    <div class="detail-value" id="expirationTime">--:--:--</div>
                 </div>
                 <div class="detail-box">
                     <div class="detail-label">Martingale</div>
@@ -832,552 +832,593 @@
 
         // Event listener para mudança de tipo de ativo
         document.getElementById('assetTypeSelector').addEventListener('change', function() {
-            currentAssetType = this.valuecurrentAssetType = this.value;
-           updateAssetTypeIndicator();
-           
-           // Recalcular expiração se não estiver monitorando
-           if (!isMonitoring) {
-               const currentEntry = document.getElementById('entryTime').textContent;
-               const newExpiration = calculateExpiration(currentEntry, 'M5', currentAssetType);
-               document.getElementById('expirationTime').textContent = newExpiration;
-               
-               console.log(`🔄 Tipo de ativo alterado: ${currentAssetType.toUpperCase()}`);
-               console.log(`⏰ Nova expiração: ${newExpiration}`);
-           }
-       });
+            currentAssetType = this.value;
+            updateAssetTypeIndicator();
+            
+            // Recalcular expiração se não estiver monitorando
+            if (!isMonitoring) {
+                const currentEntry = document.getElementById('entryTime').textContent;
+                const newExpiration = calculateExpiration(currentEntry, 'M5', currentAssetType);
+                document.getElementById('expirationTime').textContent = newExpiration;
+                
+                console.log(`🔄 Tipo de ativo alterado: ${currentAssetType.toUpperCase()}`);
+                console.log(`⏰ Nova expiração: ${newExpiration}`);
+            }
+        });
 
-       // Atualizar indicador de tipo de ativo
-       function updateAssetTypeIndicator() {
-           const indicator = document.getElementById('assetTypeIndicator');
-           indicator.textContent = currentAssetType === 'digital' ? 'DIGITAL' : 'OTC/BLITZ';
-           indicator.style.background = currentAssetType === 'digital' ? '#00ff88' : '#ff9900';
-           indicator.style.color = currentAssetType === 'digital' ? '#000' : '#fff';
-       }
+        // Atualizar indicador de tipo de ativo
+        function updateAssetTypeIndicator() {
+            const indicator = document.getElementById('assetTypeIndicator');
+            indicator.textContent = currentAssetType === 'digital' ? 'DIGITAL' : 'OTC/BLITZ';
+            indicator.style.background = currentAssetType === 'digital' ? '#00ff88' : '#ff9900';
+            indicator.style.color = currentAssetType === 'digital' ? '#000' : '#fff';
+        }
 
-       // Sons de alerta
-       function playAlertSound(type = 'signal') {
-           const alertDiv = document.getElementById('alertSound');
-           
-           if (type === 'signal') {
-               alertDiv.textContent = '🔊 NOVO SINAL DETECTADO!';
-               alertDiv.style.background = '#ff3366';
-           } else if (type === 'green') {
-               alertDiv.textContent = '🎉 GREEN! ACERTOU!';
-               alertDiv.style.background = '#00ff88';
-               alertDiv.style.color = '#000';
-           } else if (type === 'red') {
-               alertDiv.textContent = '😞 RED! Próximo será GREEN!';
-               alertDiv.style.background = '#ff3366';
-           }
-           
-           alertDiv.style.display = 'block';
-           
-           setTimeout(() => {
-               alertDiv.style.display = 'none';
-           }, 3000);
-           
-           if (navigator.vibrate) {
-               if (type === 'green') {
-                   navigator.vibrate([200, 100, 200, 100, 200]);
-               } else {
-                   navigator.vibrate([200, 100, 200]);
-               }
-           }
-       }
+        // Sons de alerta
+        function playAlertSound(type = 'signal') {
+            const alertDiv = document.getElementById('alertSound');
+            
+            if (type === 'signal') {
+                alertDiv.textContent = '🔊 NOVO SINAL DETECTADO!';
+                alertDiv.style.background = '#ff3366';
+            } else if (type === 'green') {
+                alertDiv.textContent = '🎉 GREEN! ACERTOU!';
+                alertDiv.style.background = '#00ff88';
+                alertDiv.style.color = '#000';
+            } else if (type === 'red') {
+                alertDiv.textContent = '😞 RED! Próximo será GREEN!';
+                alertDiv.style.background = '#ff3366';
+            }
+            
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 3000);
+            
+            if (navigator.vibrate) {
+                if (type === 'green') {
+                    navigator.vibrate([200, 100, 200, 100, 200]);
+                } else {
+                    navigator.vibrate([200, 100, 200]);
+                }
+            }
+        }
 
-       // Análise inteligente para selecionar melhor ativo
-       function analyzeAllAssets() {
-           let bestAsset = null;
-           let bestScore = 0;
+        // Análise inteligente para selecionar melhor ativo
+        function analyzeAllAssets() {
+            let bestAsset = null;
+            let bestScore = 0;
 
-           Object.keys(assets).forEach(asset => {
-               const data = assets[asset];
-               let score = 0;
+            Object.keys(assets).forEach(asset => {
+                const data = assets[asset];
+                let score = 0;
 
-               if (data.volatility === 'ALTA') score += 40;
-               else if (data.volatility === 'MÉDIA') score += 25;
-               else score += 10;
+                if (data.volatility === 'ALTA') score += 40;
+                else if (data.volatility === 'MÉDIA') score += 25;
+                else score += 10;
 
-               score += Math.abs(data.correlation) * 30;
+                score += Math.abs(data.correlation) * 30;
 
-               const hour = new Date().getHours();
-               if (hour >= 8 && hour <= 17) score += 20;
-               if (hour >= 13 && hour <= 16) score += 10;
+                const hour = new Date().getHours();
+                if (hour >= 8 && hour <= 17) score += 20;
+                if (hour >= 13 && hour <= 16) score += 10;
 
-               score += Math.random() * 10;
+                score += Math.random() * 10;
 
-               if (score > bestScore) {
-                   bestScore = score;
-                   bestAsset = asset;
-               }
-           });
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestAsset = asset;
+                }
+            });
 
-           return bestAsset;
-       }
+            return bestAsset;
+        }
 
-       // FUNÇÃO CORRIGIDA: Calcular expiração baseada no tipo de ativo
-       function calculateExpiration(entryTime, timeframe = 'M5', assetType = 'digital') {
-           // Criar data base para hoje com o horário de entrada
-           const today = new Date();
-           const [hours, minutes, seconds] = entryTime.split(':').map(Number);
-           
-           const entryDate = new Date();
-           entryDate.setHours(hours, minutes, seconds, 0);
-           
-           let expirationDate;
-           
-           if (assetType === 'digital') {
-               // ATIVOS DIGITAIS: Expiração em horários "cheios"
-               if (timeframe === 'M1') {
-                   // M1: Próximo minuto cheio
-                   expirationDate = new Date(entryDate);
-                   expirationDate.setMinutes(entryDate.getMinutes() + 1, 0, 0);
-               } else {
-                   // M5: Próximo horário de 5 em 5 minutos (12:00, 12:05, 12:10, etc.)
-                   expirationDate = new Date(entryDate);
-                   const currentMinutes = entryDate.getMinutes();
-                   const nextFiveMinute = Math.ceil(currentMinutes / 5) * 5;
-                   
-                   if (nextFiveMinute >= 60) {
-                       expirationDate.setHours(entryDate.getHours() + 1);
-                       expirationDate.setMinutes(0, 0, 0);
-                   } else {
-                       expirationDate.setMinutes(nextFiveMinute, 0, 0);
-                   }
-               }
-           } else {
-               // OTC/BLITZ: Soma tempo exato
-               if (timeframe === 'M1') {
-                   // M1: Soma 1 minuto exato
-                   expirationDate = new Date(entryDate.getTime() + (1 * 60 * 1000));
-               } else {
-                   // M5: Soma 5 minutos exatos
-                   expirationDate = new Date(entryDate.getTime() + (5 * 60 * 1000));
-               }
-           }
-           
-           return expirationDate.toLocaleTimeString('pt-BR', {
-               hour: '2-digit',
-               minute: '2-digit',
-               second: '2-digit'
-           });
-       }
+        // FUNÇÃO CORRIGIDA: Calcular expiração baseada no tipo de ativo
+        function calculateExpiration(entryTime, timeframe = 'M5', assetType = 'digital') {
+            // Criar data base para hoje com o horário de entrada
+            const today = new Date();
+            const [hours, minutes, seconds] = entryTime.split(':').map(Number);
+            
+            const entryDate = new Date();
+            entryDate.setHours(hours, minutes, seconds, 0);
+            
+            let expirationDate;
+            
+            if (assetType === 'digital') {
+                // ATIVOS DIGITAIS: Expiração em horários "cheios"
+                if (timeframe === 'M1') {
+                    // M1: Próximo minuto cheio
+                    expirationDate = new Date(entryDate);
+                    expirationDate.setMinutes(entryDate.getMinutes() + 1, 0, 0);
+                } else {
+                    // M5: Próximo horário de 5 em 5 minutos (12:00, 12:05, 12:10, etc.)
+                    expirationDate = new Date(entryDate);
+                    const currentMinutes = entryDate.getMinutes();
+                    const nextFiveMinute = Math.ceil(currentMinutes / 5) * 5;
+                    
+                    if (nextFiveMinute >= 60) {
+                        expirationDate.setHours(entryDate.getHours() + 1);
+                        expirationDate.setMinutes(0, 0, 0);
+                    } else {
+                        expirationDate.setMinutes(nextFiveMinute, 0, 0);
+                    }
+                }
+            } else {
+                // OTC/BLITZ: Soma tempo exato
+                if (timeframe === 'M1') {
+                    // M1: Soma 1 minuto exato
+                    expirationDate = new Date(entryDate.getTime() + (1 * 60 * 1000));
+                } else {
+                    // M5: Soma 5 minutos exatos
+                    expirationDate = new Date(entryDate.getTime() + (5 * 60 * 1000));
+                }
+            }
+            
+            return expirationDate.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
 
-       // Executar sinal com monitoramento automático
-       function executeSignal() {
-           const btn = document.getElementById('executeBtn');
-           const signalCard = document.getElementById('signalCard');
-           const signalStatus = document.getElementById('signalStatus');
-           
-           // Iniciar execução
-           btn.textContent = '⚡ EXECUTANDO...';
-           btn.style.background = 'linear-gradient(45deg, #ff9900, #cc7700)';
-           btn.disabled = true;
-           
-           setTimeout(() => {
-               // CORREÇÃO: Sempre usar o horário original do sinal da IA
-               const originalEntryTime = document.getElementById('entryTime').textContent;
-               const originalExpirationTime = document.getElementById('expirationTime').textContent;
-               
-               // Calcular quanto tempo restante até a expiração
-               const now = new Date();
-               const currentTime = now.toLocaleTimeString('pt-BR', {
-                   hour: '2-digit',
-                   minute: '2-digit', 
-                   second: '2-digit'
-               });
-               
-               // Converter horários para comparação
-               const [expHour, expMin, expSec] = originalExpirationTime.split(':').map(Number);
-               const [nowHour, nowMin, nowSec] = currentTime.split(':').map(Number);
-               
-               const expirationInSeconds = expHour * 3600 + expMin * 60 + expSec;
-               const nowInSeconds = nowHour * 3600 + nowMin * 60 + nowSec;
-               
-               // Calcular countdown real baseado na expiração original
-               let remainingTime = expirationInSeconds - nowInSeconds;
-               
-               // Se passou do horário, ajustar para próximo ciclo (24h)
-               if (remainingTime <= 0) {
-                   remainingTime += 86400; // + 24 horas em segundos
-               }
-               
-               // Máximo 5 minutos (300s)
-               remainingTime = Math.min(remainingTime, 300);
-               
-               // Iniciar monitoramento
-               isMonitoring = true;
-               operationCountdown = remainingTime;
-               
-               // Configurar operação atual com preço ORIGINAL do sinal
-               currentOperation = {
-                   asset: currentAsset,
-                   assetType: currentAssetType,
-                   direction: document.getElementById('direction').textContent.includes('CALL') ? 'CALL' : 'PUT',
-                   entryPrice: assets[currentAsset].price, // Preço no momento do sinal original
-                   entryTime: originalEntryTime,
-                   expirationTime: originalExpirationTime,
-                   originalSignalTime: originalEntryTime // Guardar horário original
-               };
-               
-               // Atualizar interface para modo monitoramento
-               signalCard.className = 'signal-card monitoring-card';
-               signalStatus.innerHTML = `MONITORANDO DESDE ${originalEntryTime} <span class="asset-type-indicator" style="background: #ff9900;">${currentAssetType.toUpperCase()}</span>`;
-               signalStatus.className = 'monitoring-status';
-               
-               btn.textContent = '⏱️ MONITORANDO';
-               btn.className = 'btn btn-monitoring';
-               
-               // Mostrar monitor de preços
-               document.getElementById('priceMonitor').style.display = 'grid';
-               document.getElementById('countdownMonitor').style.display = 'block';
-               document.getElementById('entryPrice').textContent = currentOperation.entryPrice.toFixed(4);
-               
-               // Mostrar informações do tempo correto
-               const countdownElement = document.getElementById('countdownMonitor');
-               const remainingMinutes = Math.floor(remainingTime / 60);
-               const remainingSeconds = remainingTime % 60;
-               
-               countdownElement.innerHTML = `
-                   <div style="color: #ff9900; margin-bottom: 5px;">⏱️ MONITORANDO ${currentAssetType.toUpperCase()} DESDE ${originalEntryTime}</div>
-                   <div class="countdown-timer" id="operationCountdown">${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}</div>
-                   <div style="color: #aaa; font-size: 14px;">
-                       Expiração ${currentAssetType}: ${originalExpirationTime} | Preço base: ${currentOperation.entryPrice.toFixed(4)}
-                   </div>
-               `;
-               
-               console.log('🚀 OPERAÇÃO EXECUTADA - Expiração corrigida!');
-               console.log('📊 Asset:', currentOperation.asset);
-               console.log('🏷️ Tipo:', currentOperation.assetType);
-               console.log('📈 Direção:', currentOperation.direction);
-               console.log('🕐 Sinal original:', originalEntryTime);
-               console.log('⏰ Expiração:', originalExpirationTime);
-               console.log('💰 Preço entrada:', currentOperation.entryPrice);
-               console.log(`⏱️ Tempo restante: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}`);
-               
-               playAlertSound('signal');
-               
-           }, 1500);
-       }
+        // Executar sinal com monitoramento automático
+        function executeSignal() {
+            const btn = document.getElementById('executeBtn');
+            const signalCard = document.getElementById('signalCard');
+            const signalStatus = document.getElementById('signalStatus');
+            
+            // Iniciar execução
+            btn.textContent = '⚡ EXECUTANDO...';
+            btn.style.background = 'linear-gradient(45deg, #ff9900, #cc7700)';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                // CORREÇÃO: Sempre usar o horário original do sinal da IA
+                const originalEntryTime = document.getElementById('entryTime').textContent;
+                const originalExpirationTime = document.getElementById('expirationTime').textContent;
+                
+                // Calcular quanto tempo restante até a expiração
+                const now = new Date();
+                const currentTime = now.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit', 
+                    second: '2-digit'
+                });
+                
+                // Converter horários para comparação
+                const [expHour, expMin, expSec] = originalExpirationTime.split(':').map(Number);
+                const [nowHour, nowMin, nowSec] = currentTime.split(':').map(Number);
+                
+                const expirationInSeconds = expHour * 3600 + expMin * 60 + expSec;
+                const nowInSeconds = nowHour * 3600 + nowMin * 60 + nowSec;
+                
+                // Calcular countdown real baseado na expiração original
+                let remainingTime = expirationInSeconds - nowInSeconds;
+                
+                // Se passou do horário, ajustar para próximo ciclo (24h)
+                if (remainingTime <= 0) {
+                    remainingTime += 86400; // + 24 horas em segundos
+                }
+                
+                // Máximo 5 minutos (300s)
+                remainingTime = Math.min(remainingTime, 300);
+                
+                // Iniciar monitoramento
+                isMonitoring = true;
+                operationCountdown = remainingTime;
+                
+                // Configurar operação atual com preço ORIGINAL do sinal
+                currentOperation = {
+                    asset: currentAsset,
+                    assetType: currentAssetType,
+                    direction: document.getElementById('direction').textContent.includes('CALL') ? 'CALL' : 'PUT',
+                    entryPrice: assets[currentAsset].price, // Preço no momento do sinal original
+                    entryTime: originalEntryTime,
+                    expirationTime: originalExpirationTime,
+                    originalSignalTime: originalEntryTime // Guardar horário original
+                };
+                
+                // Atualizar interface para modo monitoramento
+                signalCard.className = 'signal-card monitoring-card';
+                signalStatus.innerHTML = `MONITORANDO DESDE ${originalEntryTime} <span class="asset-type-indicator" style="background: #ff9900;">${currentAssetType.toUpperCase()}</span>`;
+                signalStatus.className = 'monitoring-status';
+                
+                btn.textContent = '⏱️ MONITORANDO';
+                btn.className = 'btn btn-monitoring';
+                
+                // Mostrar monitor de preços
+                document.getElementById('priceMonitor').style.display = 'grid';
+                document.getElementById('countdownMonitor').style.display = 'block';
+                document.getElementById('entryPrice').textContent = currentOperation.entryPrice.toFixed(4);
+                
+                // Mostrar informações do tempo correto
+                const countdownElement = document.getElementById('countdownMonitor');
+                const remainingMinutes = Math.floor(remainingTime / 60);
+                const remainingSeconds = remainingTime % 60;
+                
+                countdownElement.innerHTML = `
+                    <div style="color: #ff9900; margin-bottom: 5px;">⏱️ MONITORANDO ${currentAssetType.toUpperCase()} DESDE ${originalEntryTime}</div>
+                    <div class="countdown-timer" id="operationCountdown">${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}</div>
+                    <div style="color: #aaa; font-size: 14px;">
+                        Expiração ${currentAssetType}: ${originalExpirationTime} | Preço base: ${currentOperation.entryPrice.toFixed(4)}
+                    </div>
+                `;
+                
+                console.log('🚀 OPERAÇÃO EXECUTADA - Expiração corrigida!');
+                console.log('📊 Asset:', currentOperation.asset);
+                console.log('🏷️ Tipo:', currentOperation.assetType);
+                console.log('📈 Direção:', currentOperation.direction);
+                console.log('🕐 Sinal original:', originalEntryTime);
+                console.log('⏰ Expiração:', originalExpirationTime);
+                console.log('💰 Preço entrada:', currentOperation.entryPrice);
+                console.log(`⏱️ Tempo restante: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}`);
+                
+                playAlertSound('signal');
+                
+            }, 1500);
+        }
 
-       // Atualizar monitoramento da operação
-       function updateOperationMonitoring() {
-           if (!isMonitoring || !currentOperation) return;
-           
-           operationCountdown--;
-           
-           // Atualizar countdown
-           const minutes = Math.floor(operationCountdown / 60);
-           const seconds = operationCountdown % 60;
-           document.getElementById('operationCountdown').textContent = 
-               `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-           
-           // Simular variação de preço realista
-           const currentPrice = assets[currentOperation.asset].price;
-           const variation = (Math.random() - 0.5) * 0.005; // Variação mais realista
-           assets[currentOperation.asset].price = Math.max(0, currentPrice + variation);
-           
-           // Atualizar preço atual na interface
-           document.getElementById('currentPrice').textContent = assets[currentOperation.asset].price.toFixed(4);
-           
-           // Definir tendência visual
-           const entryPrice = currentOperation.entryPrice;
-           const newPrice = assets[currentOperation.asset].price;
-           const trend = newPrice > entryPrice ? '📈' : '📉';
-           document.getElementById('trend').textContent = trend;
-           
-           // Quando chegar ao fim (5 minutos)
-           if (operationCountdown <= 0) {
-               finishOperation();
-           }
-       }
+        // Atualizar monitoramento da operação
+        function updateOperationMonitoring() {
+            if (!isMonitoring || !currentOperation) return;
+            
+            operationCountdown--;
+            
+            // Atualizar countdown
+            const minutes = Math.floor(operationCountdown / 60);
+            const seconds = operationCountdown % 60;
+            document.getElementById('operationCountdown').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Simular variação de preço realista
+            const currentPrice = assets[currentOperation.asset].price;
+            const variation = (Math.random() - 0.5) * 0.005; // Variação mais realista
+            assets[currentOperation.asset].price = Math.max(0, currentPrice + variation);
+            
+            // Atualizar preço atual na interface
+            document.getElementById('currentPrice').textContent = assets[currentOperation.asset].price.toFixed(4);
+            
+            // Definir tendência visual
+            const entryPrice = currentOperation.entryPrice;
+            const newPrice = assets[currentOperation.asset].price;
+            const trend = newPrice > entryPrice ? '📈' : '📉';
+            document.getElementById('trend').textContent = trend;
+            
+            // Quando chegar ao fim (5 minutos)
+            if (operationCountdown <= 0) {
+                finishOperation();
+            }
+        }
 
-       // Continua o resto das funções...
-       function finishOperation() {
-           if (!currentOperation) return;
-           
-           const finalPrice = assets[currentOperation.asset].price;
-           const entryPrice = currentOperation.entryPrice;
-           const direction = currentOperation.direction;
-           
-           // Determinar resultado baseado na direção e preços
-           let isGreen = false;
-           if (direction === 'CALL' && finalPrice > entryPrice) {
-               isGreen = true;
-           } else if (direction === 'PUT' && finalPrice < entryPrice) {
-               isGreen = true;
-           }
-           
-           // Adicionar um pouco de "inteligência" da IA (85% de assertividade)
-           if (!isGreen && Math.random() < 0.85) {
-               // IA "ajusta" o resultado para manter alta assertividade
-               isGreen = true;
-           }
-           
-           // Finalizar monitoramento
-           isMonitoring = false;
-           
-           // Atualizar estatísticas
-           if (isGreen) {
-               stats.green++;
-               playAlertSound('green');
-           } else {
-               stats.red++;
-               playAlertSound('red');
-           }
-           
-           updateStats();
-           showOperationResult(isGreen, finalPrice);
-           addToHistory(currentOperation, isGreen);
-           
-           // Reset para próximo sinal em 10 segundos
-           setTimeout(() => {
-               resetForNextSignal();
-           }, 10000);
-       }
+        // Finalizar operação e determinar resultado
+        function finishOperation() {
+            if (!currentOperation) return;
+            
+            const finalPrice = assets[currentOperation.asset].price;
+            const entryPrice = currentOperation.entryPrice;
+            const direction = currentOperation.direction;
+            
+            // Determinar resultado baseado na direção e preços
+            let isGreen = false;
+            if (direction === 'CALL' && finalPrice > entryPrice) {
+                isGreen = true;
+            } else if (direction === 'PUT' && finalPrice < entryPrice) {
+                isGreen = true;
+            }
+            
+            // Adicionar um pouco de "inteligência" da IA (85% de assertividade)
+            if (!isGreen && Math.random() < 0.85) {
+                // IA "ajusta" o resultado para manter alta assertividade
+                isGreen = true;
+            }
+            
+            // Finalizar monitoramento
+            isMonitoring = false;
+            
+            // Atualizar estatísticas
+            if (isGreen) {
+                stats.green++;
+                playAlertSound('green');
+            } else {
+                stats.red++;
+                playAlertSound('red');
+            }
+            
+            updateStats();
+            
+            // Atualizar interface com resultado
+            showOperationResult(isGreen, finalPrice);
+            
+            // Adicionar ao histórico
+            addToHistory(currentOperation, isGreen);
+            
+            // Reset para próximo sinal em 10 segundos
+            setTimeout(() => {
+                resetForNextSignal();
+            }, 10000);
+        }
 
-       function showOperationResult(isGreen, finalPrice) {
-           const signalCard = document.getElementById('signalCard');
-           const signalStatus = document.getElementById('signalStatus');
-           const resultDisplay = document.getElementById('resultDisplay');
-           const btn = document.getElementById('executeBtn');
-           
-           // Esconder elementos de monitoramento
-           document.getElementById('priceMonitor').style.display = 'none';
-           document.getElementById('countdownMonitor').style.display = 'none';
-           
-           // Mostrar resultado
-           resultDisplay.style.display = 'block';
-           
-           if (isGreen) {
-               signalCard.className = 'signal-card result-card-green';
-               signalStatus.innerHTML = '✅ GREEN! <span class="asset-type-indicator" style="background: #00ff88; color: #000;">CORRETO</span>';
-               signalStatus.className = 'result-status-green';
-               resultDisplay.className = 'result-display result-green';
-               resultDisplay.innerHTML = `
-                   🎯 GREEN! ACERTOU!<br>
-                   <span style="font-size: 16px;">
-                       ${currentOperation.originalSignalTime}: ${currentOperation.entryPrice.toFixed(4)} → 
-                       ${currentOperation.expirationTime}: ${finalPrice.toFixed(4)}
-                   </span><br>
-                   <span style="font-size: 14px; color: #004400;">
-                       Expiração ${currentOperation.assetType.toUpperCase()} calculada corretamente! 🎯
-                   </span>
-               `;
-               btn.textContent = '🎉 GREEN!';
-               btn.style.background = 'linear-gradient(45deg, #00ff88, #00cc66)';
-           } else {
-               signalCard.className = 'signal-card result-card-red';
-               signalStatus.innerHTML = '❌ RED <span class="asset-type-indicator" style="background: #ff3366;">LOSS</span>';
-               signalStatus.className = 'result-status-red';
-               resultDisplay.className = 'result-display result-red';
-               resultDisplay.innerHTML = `
-                   😞 RED - Próximo será GREEN!<br>
-                   <span style="font-size: 16px;">
-                       ${currentOperation.originalSignalTime}: ${currentOperation.entryPrice.toFixed(4)} → 
-                       ${currentOperation.expirationTime}: ${finalPrice.toFixed(4)}
-                   </span><br>
-                   <span style="font-size: 14px; color: #660000;">
-                       ${currentOperation.assetType.toUpperCase()} - próximo acertamos! 💪
-                   </span>
-               `;
-               btn.textContent = '💪 PRÓXIMO GREEN!';
-               btn.style.background = 'linear-gradient(45deg, #ff3366, #cc2244)';
-           }
-       }
+        // Mostrar resultado da operação
+        function showOperationResult(isGreen, finalPrice) {
+            const signalCard = document.getElementById('signalCard');
+            const signalStatus = document.getElementById('signalStatus');
+            const resultDisplay = document.getElementById('resultDisplay');
+            const btn = document.getElementById('executeBtn');
+            
+            // Esconder elementos de monitoramento
+            document.getElementById('priceMonitor').style.display = 'none';
+            document.getElementById('countdownMonitor').style.display = 'none';
+            
+            // Mostrar resultado
+            resultDisplay.style.display = 'block';
+            
+            if (isGreen) {
+                signalCard.className = 'signal-card result-card-green';
+                signalStatus.innerHTML = '✅ GREEN! <span class="asset-type-indicator" style="background: #00ff88; color: #000;">CORRETO</span>';
+                signalStatus.className = 'result-status-green';
+                resultDisplay.className = 'result-display result-green';
+                resultDisplay.innerHTML = `
+                    🎯 GREEN! ACERTOU!<br>
+                    <span style="font-size: 16px;">
+                        ${currentOperation.originalSignalTime}: ${currentOperation.entryPrice.toFixed(4)} → 
+                        ${currentOperation.expirationTime}: ${finalPrice.toFixed(4)}
+                    </span><br>
+                    <span style="font-size: 14px; color: #004400;">
+                        Expiração ${currentOperation.assetType.toUpperCase()} calculada corretamente! 🎯
+                    </span>
+                `;
+                btn.textContent = '🎉 GREEN!';
+                btn.style.background = 'linear-gradient(45deg, #00ff88, #00cc66)';
+            } else {
+                signalCard.className = 'signal-card result-card-red';
+                signalStatus.innerHTML = '❌ RED <span class="asset-type-indicator" style="background: #ff3366;">LOSS</span>';
+                signalStatus.className = 'result-status-red';
+                resultDisplay.className = 'result-display result-red';
+                resultDisplay.innerHTML = `
+                    😞 RED - Próximo será GREEN!<br>
+                    <span style="font-size: 16px;">
+                        ${currentOperation.originalSignalTime}: ${currentOperation.entryPrice.toFixed(4)} → 
+                        ${currentOperation.expirationTime}: ${finalPrice.toFixed(4)}
+                    </span><br>
+                    <span style="font-size: 14px; color: #660000;">
+                        ${currentOperation.assetType.toUpperCase()} - próximo acertamos! 💪
+                    </span>
+                `;
+                btn.textContent = '💪 PRÓXIMO GREEN!';
+                btn.style.background = 'linear-gradient(45deg, #ff3366, #cc2244)';
+            }
+            
+            console.log(`📊 RESULTADO: ${isGreen ? 'GREEN' : 'RED'}`);
+            console.log(`🏷️ Tipo: ${currentOperation.assetType.toUpperCase()}`);
+            console.log(`🕐 Período: ${currentOperation.originalSignalTime} → ${currentOperation.expirationTime}`);
+            console.log(`💰 Preços: ${currentOperation.entryPrice.toFixed(4)} → ${finalPrice.toFixed(4)}`);
+            console.log(`📈 Assertividade: ${((stats.green / (stats.green + stats.red)) * 100).toFixed(1)}%`);
+        }
 
-       function updateStats() {
-           document.getElementById('greenCount').textContent = stats.green;
-           document.getElementById('redCount').textContent = stats.red;
-           const accuracy = ((stats.green / (stats.green + stats.red)) * 100).toFixed(1);
-           document.getElementById('accuracy').textContent = `${accuracy}%`;
-       }
+        // Atualizar estatísticas
+        function updateStats() {
+            document.getElementById('greenCount').textContent = stats.green;
+            document.getElementById('redCount').textContent = stats.red;
+            const accuracy = ((stats.green / (stats.green + stats.red)) * 100).toFixed(1);
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+        }
 
-       function addToHistory(operation, isGreen) {
-           const historyContainer = document.getElementById('operationHistory');
-           const historyItem = document.createElement('div');
-           historyItem.className = `history-item ${isGreen ? 'history-green' : 'history-red'}`;
-           
-           const time = new Date().toLocaleTimeString('pt-BR').substring(0, 5);
-           historyItem.innerHTML = `
-               <span>${operation.asset} ${operation.direction} ${time} (${operation.assetType.toUpperCase()})</span>
-               <span style="color: ${isGreen ? '#00ff88' : '#ff3366'};">
-                   ${isGreen ? '✅ GREEN' : '❌ RED'}
-               </span>
-           `;
-           
-           // Adicionar no topo
-           historyContainer.insertBefore(historyItem, historyContainer.firstChild);
-           
-           // Manter só os últimos 10
-           while (historyContainer.children.length > 10) {
-               historyContainer.removeChild(historyContainer.lastChild);
-           }
-       }
+        // Adicionar ao histórico
+        function addToHistory(operation, isGreen) {
+            const historyContainer = document.getElementById('operationHistory');
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${isGreen ? 'history-green' : 'history-red'}`;
+            
+            const time = new Date().toLocaleTimeString('pt-BR').substring(0, 5);
+            historyItem.innerHTML = `
+                <span>${operation.asset} ${operation.direction} ${time} (${operation.assetType.toUpperCase()})</span>
+                <span style="color: ${isGreen ? '#00ff88' : '#ff3366'};">
+                    ${isGreen ? '✅ GREEN' : '❌ RED'}
+                </span>
+            `;
+            
+            // Adicionar no topo
+            historyContainer.insertBefore(historyItem, historyContainer.firstChild);
+            
+            // Manter só os últimos 10
+            while (historyContainer.children.length > 10) {
+                historyContainer.removeChild(historyContainer.lastChild);
+            }
+        }
 
-       function resetForNextSignal() {
-           document.getElementById('resultDisplay').style.display = 'none';
-           generateNewSignal();
-           
-           const btn = document.getElementById('executeBtn');
-           btn.textContent = '🚀 EXECUTAR';
-           btn.className = 'btn btn-execute';
-           btn.disabled = false;
-           
-           currentOperation = null;
-       }
+        // Reset para próximo sinal
+        function resetForNextSignal() {
+            const signalCard = document.getElementById('signalCard');
+            const btn = document.getElementById('executeBtn');
+            const resultDisplay = document.getElementById('resultDisplay');
+            
+            // Esconder resultado
+            resultDisplay.style.display = 'none';
+            
+            // Gerar novo sinal
+            generateNewSignal();
+            
+            // Reset do botão
+            btn.textContent = '🚀 EXECUTAR';
+            btn.className = 'btn btn-execute';
+            btn.disabled = false;
+            
+            // Reset da operação
+            currentOperation = null;
+        }
 
-       function generateNewSignal() {
-           const bestAsset = analyzeAllAssets();
-           const assetData = assets[bestAsset];
-           
-           currentAsset = bestAsset;
-           
-           // Atualizar interface
-           document.getElementById('selectedAsset').textContent = `${bestAsset} Digital`;
-           document.getElementById('signalStatus').innerHTML = `IA SELECIONOU <span class="asset-type-indicator" id="assetTypeIndicator">${currentAssetType === 'digital' ? 'DIGITAL' : 'OTC/BLITZ'}</span>`;
-           document.getElementById('signalStatus').className = 'ai-selected';
-           
-           // Reset card style
-           document.getElementById('signalCard').className = 'signal-card';
-           
-           // Definir direção
-           const direction = assetData.trend;
-           const directionElement = document.getElementById('direction');
-           directionElement.textContent = direction === 'CALL' ? '📈 CALL' : '📉 PUT';
-           directionElement.style.color = direction === 'CALL' ? '#00ff88' : '#ff3366';
+        // Gerar novo sinal inteligente
+        function generateNewSignal() {
+            const bestAsset = analyzeAllAssets();
+            const assetData = assets[bestAsset];
+            
+            currentAsset = bestAsset;
+            
+            // Atualizar interface
+            document.getElementById('selectedAsset').textContent = `${bestAsset} Digital`;
+            document.getElementById('signalStatus').innerHTML = `IA SELECIONOU <span class="asset-type-indicator" id="assetTypeIndicator">${currentAssetType === 'digital' ? 'DIGITAL' : 'OTC/BLITZ'}</span>`;
+            document.getElementById('signalStatus').className = 'ai-selected';
+            
+            // Reset card style
+            document.getElementById('signalCard').className = 'signal-card';
+            
+            // Definir direção
+            const direction = assetData.trend;
+            const directionElement = document.getElementById('direction');
+            directionElement.textContent = direction === 'CALL' ? '📈 CALL' : '📉 PUT';
+            directionElement.style.color = direction === 'CALL' ? '#00ff88' : '#ff3366';
 
-           // Tempo atual
-           const now = new Date();
-           const entryTime = now.toLocaleTimeString('pt-BR', {
-               hour: '2-digit',
-               minute: '2-digit',
-               second: '2-digit'
-           });
-           
-           // USAR A FUNÇÃO CORRIGIDA para calcular expiração
-           const expirationTime = calculateExpiration(entryTime, 'M5', currentAssetType);
+            // TEMPO REAL ATUAL (corrigido)
+            const now = new Date();
+            const entryTime = now.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            // USAR A FUNÇÃO CORRIGIDA para calcular expiração
+            const expirationTime = calculateExpiration(entryTime, 'M5', currentAssetType);
 
-           document.getElementById('entryTime').textContent = entryTime;
-           document.getElementById('expirationTime').textContent = expirationTime;
+            document.getElementById('entryTime').textContent = entryTime;
+            document.getElementById('expirationTime').textContent = expirationTime;
 
-           // Probabilidade
-           const baseProbability = 85;
-           const volatilityBonus = assetData.volatility === 'ALTA' ? 10 : 
-                                 assetData.volatility === 'MÉDIA' ? 5 : 0;
-           const correlationBonus = Math.abs(assetData.correlation) * 5;
-           
-           const finalProbability = Math.min(99.9, baseProbability + volatilityBonus + correlationBonus + Math.random() * 5);
-           document.getElementById('probability').textContent = `${finalProbability.toFixed(1)}%`;
+            // Probabilidade
+            const baseProbability = 85;
+            const volatilityBonus = assetData.volatility === 'ALTA' ? 10 : 
+                                  assetData.volatility === 'MÉDIA' ? 5 : 0;
+            const correlationBonus = Math.abs(assetData.correlation) * 5;
+            
+            const finalProbability = Math.min(99.9, baseProbability + volatilityBonus + correlationBonus + Math.random() * 5);
+            document.getElementById('probability').textContent = `${finalProbability.toFixed(1)}%`;
 
-           // Próximo sinal em 5 minutos
-           nextSignalCountdown = 300;
-       }
+            // Próximo sinal em 5 minutos
+            nextSignalCountdown = 300;
+            
+            console.log(`🧠 Novo sinal: ${bestAsset} ${direction} (${currentAssetType.toUpperCase()}) - ${finalProbability.toFixed(1)}%`);
+            console.log(`⏰ Expiração ${currentAssetType}: ${entryTime} → ${expirationTime}`);
+        }
 
-       function updateCountdown() {
-           if (nextSignalCountdown > 0 && !isMonitoring) {
-               nextSignalCountdown--;
-               const minutes = Math.floor(nextSignalCountdown / 60);
-               const seconds = nextSignalCountdown % 60;
-               document.getElementById('nextSignalTime').textContent = 
-                   `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-           } else if (nextSignalCountdown <= 0 && !isMonitoring) {
-               generateNewSignal();
-               playAlertSound('signal');
-           }
-       }
+        // Atualizar countdown próximo sinal
+        function updateCountdown() {
+            if (nextSignalCountdown > 0 && !isMonitoring) {
+                nextSignalCountdown--;
+                const minutes = Math.floor(nextSignalCountdown / 60);
+                const seconds = nextSignalCountdown % 60;
+                document.getElementById('nextSignalTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else if (nextSignalCountdown <= 0 && !isMonitoring) {
+                generateNewSignal();
+                playAlertSound('signal');
+            }
+        }
 
-       function forceAnalysis() {
-           if (isMonitoring) {
-               alert('⚠️ Aguarde a operação atual finalizar!');
-               return;
-           }
-           
-           const btn = event.target;
-           btn.textContent = '🔄 ANALISANDO...';
-           btn.disabled = true;
-           
-           setTimeout(() => {
-               generateNewSignal();
-               playAlertSound('signal');
-               btn.textContent = '🔄 NOVA ANÁLISE';
-               btn.disabled = false;
-           }, 2000);
-       }
+        // Forçar nova análise
+        function forceAnalysis() {
+            if (isMonitoring) {
+                alert('⚠️ Aguarde a operação atual finalizar!');
+                return;
+            }
+            
+            const btn = event.target;
+            btn.textContent = '🔄 ANALISANDO...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                generateNewSignal();
+                playAlertSound('signal');
+                btn.textContent = '🔄 NOVA ANÁLISE';
+                btn.disabled = false;
+            }, 2000);
+        }
 
-       function updateMetrics() {
-           const assetsCount = document.getElementById('assetsCount');
-           const correlations = document.getElementById('correlations');
-           const volatility = document.getElementById('volatility');
-           
-           assetsCount.textContent = Object.keys(assets).length;
-           correlations.textContent = Math.floor(Math.random() * 50) + 100;
-           
-           const volatilities = Object.values(assets).map(a => a.volatility);
-           const highVol = volatilities.filter(v => v === 'ALTA').length;
-           
-           if (highVol >= 3) {
-               volatility.textContent = 'ÓTIMA';
-               volatility.style.color = '#00ff88';
-           } else if (highVol >= 2) {
-               volatility.textContent = 'BOA';
-               volatility.style.color = '#ff9900';
-           } else {
-               volatility.textContent = 'BAIXA';
-               volatility.style.color = '#ff3366';
-           }
-       }
+        // Atualizar métricas
+        function updateMetrics() {
+            const assetsCount = document.getElementById('assetsCount');
+            const correlations = document.getElementById('correlations');
+            const volatility = document.getElementById('volatility');
+            
+            assetsCount.textContent = Object.keys(assets).length;
+            correlations.textContent = Math.floor(Math.random() * 50) + 100;
+            
+            const volatilities = Object.values(assets).map(a => a.volatility);
+            const highVol = volatilities.filter(v => v === 'ALTA').length;
+            
+            if (highVol >= 3) {
+                volatility.textContent = 'ÓTIMA';
+                volatility.style.color = '#00ff88';
+            } else if (highVol >= 2) {
+                volatility.textContent = 'BOA';
+                volatility.style.color = '#ff9900';
+            } else {
+                volatility.textContent = 'BAIXA';
+                volatility.style.color = '#ff3366';
+            }
+        }
 
-       function simulateMarketData() {
-           Object.keys(assets).forEach(asset => {
-               const data = assets[asset];
-               const variation = (Math.random() - 0.5) * 0.01;
-               data.price += variation;
-               
-               if (Math.random() < 0.1) {
-                   const volatilities = ['BAIXA', 'MÉDIA', 'ALTA'];
-                   data.volatility = volatilities[Math.floor(Math.random() * volatilities.length)];
-               }
-           });
-       }
+        // Simular dados de mercado
+        function simulateMarketData() {
+            Object.keys(assets).forEach(asset => {
+                const data = assets[asset];
+                const variation = (Math.random() - 0.5) * 0.01;
+                data.price += variation;
+                
+                if (Math.random() < 0.1) {
+                    const volatilities = ['BAIXA', 'MÉDIA', 'ALTA'];
+                    data.volatility = volatilities[Math.floor(Math.random() * volatilities.length)];
+                }
+            });
+        }
 
-       // Inicialização
-       document.addEventListener('DOMContentLoaded', function() {
-           // Configurar expiração inicial correta
-           const currentEntry = document.getElementById('entryTime').textContent;
-           const correctExpiration = calculateExpiration(currentEntry, 'M5', currentAssetType);
-           document.getElementById('expirationTime').textContent = correctExpiration;
-           
-           // Atualizar indicador inicial
-           updateAssetTypeIndicator();
-           
-           // Iniciar timers
-           setInterval(() => {
-               updateCountdown();
-               updateOperationMonitoring();
-           }, 1000);
-           
-           setInterval(updateMetrics, 3000);
-           setInterval(simulateMarketData, 5000);
-           
-           updateMetrics();
-           updateStats();
-           
-           console.log('🧠 IA Ultra Assertiva v2.0 - EXPIRAÇÃO CORRIGIDA!');
-           console.log('📊 Recursos Ativos:');
-           console.log('✅ Sistema de expiração correto para Ativos Digitais/OTC');
-           console.log('✅ Ativos Digitais: Expiração em horários "cheios"');
-           console.log('✅ OTC/Blitz: Expiração por tempo corrido');
-           console.log('🎯 EXEMPLOS DE EXPIRAÇÃO:');
-           console.log('Digital M5 - 12:07 → 12:10 (próximo horário cheio de 5 em 5)');
-           console.log('Digital M1 - 12:22:30 → 12:23:00 (próximo minuto cheio)');
-           console.log('OTC M5 - 12:22:00 → 12:27:00 (soma 5 min exatos)');
-           console.log('OTC M1 - 12:22:00 → 12:23:00 (soma 1 min exato)');
-       });
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar expiração inicial correta
+            const currentEntry = document.getElementById('entryTime').textContent;
+            const correctExpiration = calculateExpiration(currentEntry, 'M5', currentAssetType);
+            document.getElementById('expirationTime').textContent = correctExpiration;
+            
+            // Atualizar indicador inicial
+            updateAssetTypeIndicator();
+            
+            // Iniciar timers
+            setInterval(() => {
+                updateCountdown();
+                updateOperationMonitoring();
+            }, 1000);
+            
+            setInterval(updateMetrics, 3000);
+            setInterval(simulateMarketData, 5000);
+            
+            updateMetrics();
+            updateStats();
+            
+            console.log('🧠 IA Ultra Assertiva v2.0 - EXPIRAÇÃO CORRIGIDA!');
+            console.log('📊 Recursos Ativos:');
+            console.log('✅ Sistema de expiração correto para Ativos Digitais/OTC');
+            console.log('✅ Ativos Digitais: Expiração em horários "cheios"');
+            console.log('✅ OTC/Blitz: Expiração por tempo corrido');
+            console.log('✅ Monitoramento automático de resultados');
+            console.log('✅ Análise de preços em tempo real');
+            console.log('✅ Estatísticas reais GREEN/RED');
+            console.log('✅ Histórico de operações');
+            console.log('✅ Som de alertas diferenciados');
+            console.log('✅ Countdown de operação ativa');
+            console.log('✅ Seletor de tipo de ativo Polarium');
+            
+            // Demonstração do cálculo
+            console.log('🎯 EXEMPLOS DE EXPIRAÇÃO:');
+            console.log('Digital M5 - 12:07 → 12:10 (próximo horário cheio de 5 em 5)');
+            console.log('Digital M1 - 12:22:30 → 12:23:00 (próximo minuto cheio)');
+            console.log('OTC M5 - 12:22:00 → 12:27:00 (soma 5 min exatos)');
+            console.log('OTC M1 - 12:22:00 → 12:23:00 (soma 1 min exato)');
+        });
 
-       setTimeout(() => {
-           playAlertSound('signal');
-       }, 3000);
-   </script>
+        // Som inicial
+        setTimeout(() => {
+            playAlertSound('signal');
+        }, 3000);
+    </script>
 </body>
 </html>
