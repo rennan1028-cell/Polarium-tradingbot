@@ -321,6 +321,14 @@
             color: #fff;
         }
 
+        .status-panel {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 4px solid #00ff88;
+        }
+
         .loading {
             display: inline-block;
             width: 15px;
@@ -405,13 +413,6 @@
             text-align: center;
             margin: 15px 0;
             border: 1px solid rgba(0, 255, 136, 0.5);
-        }
-
-        .timer-display {
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ff88;
-            margin: 5px 0;
         }
 
         .score-panel {
@@ -842,591 +843,619 @@
                     else losses -= change;
                 }
                 
-                const rs = (gains / period) / (losses / perioconst rs = (gains / period) / (losses / period);
-               return 100 - (100 / (1 + rs));
-           }
+                const rs = (gains / period) / (losses / period);
+                return 100 - (100 / (1 + rs));
+            }
 
-           static calculateMACD(prices) {
-               // Simulação simplificada do MACD
-               const ema12 = this.calculateEMA(prices, 12);
-               const ema26 = this.calculateEMA(prices, 26);
-               const macdLine = ema12 - ema26;
-               
-               return {
-                   macd: macdLine,
-                   signal: macdLine * 0.9, // Linha de sinal simplificada
-                   histogram: macdLine * 0.1
-               };
-           }
+            static calculateMACD(prices) {
+                // Simulação simplificada do MACD
+                const ema12 = this.calculateEMA(prices, 12);
+                const ema26 = this.calculateEMA(prices, 26);
+                const macdLine = ema12 - ema26;
+                
+                return {
+                    macd: macdLine,
+                    signal: macdLine * 0.9, // Linha de sinal simplificada
+                    histogram: macdLine * 0.1
+                };
+            }
 
-           static calculateEMA(prices, period) {
-               if (prices.length === 0) return 0;
-               const multiplier = 2 / (period + 1);
-               let ema = prices[0];
-               
-               for (let i = 1; i < prices.length; i++) {
-                   ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
-               }
-               
-               return ema;
-           }
+            static calculateEMA(prices, period) {
+                if (prices.length === 0) return 0;
+                const multiplier = 2 / (period + 1);
+                let ema = prices[0];
+                
+                for (let i = 1; i < prices.length; i++) {
+                    ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
+                }
+                
+                return ema;
+            }
 
-           static calculateBollinger(prices, period = 20, stdDev = 2) {
-               if (prices.length < period) return { upper: 0, middle: 0, lower: 0 };
-               
-               const sma = prices.slice(-period).reduce((a, b) => a + b) / period;
-               const variance = prices.slice(-period).reduce((acc, price) => 
-                   acc + Math.pow(price - sma, 2), 0) / period;
-               const standardDeviation = Math.sqrt(variance);
-               
-               return {
-                   upper: sma + (standardDeviation * stdDev),
-                   middle: sma,
-                   lower: sma - (standardDeviation * stdDev)
-               };
-           }
+            static calculateBollinger(prices, period = 20, stdDev = 2) {
+                if (prices.length < period) return { upper: 0, middle: 0, lower: 0 };
+                
+                const sma = prices.slice(-period).reduce((a, b) => a + b) / period;
+                const variance = prices.slice(-period).reduce((acc, price) => 
+                    acc + Math.pow(price - sma, 2), 0) / period;
+                const standardDeviation = Math.sqrt(variance);
+                
+                return {
+                    upper: sma + (standardDeviation * stdDev),
+                    middle: sma,
+                    lower: sma - (standardDeviation * stdDev)
+                };
+            }
 
-           static fibonacciLevels(high, low) {
-               const diff = high - low;
-               return {
-                   '0%': high,
-                   '23.6%': high - (diff * 0.236),
-                   '38.2%': high - (diff * 0.382),
-                   '50%': high - (diff * 0.5),
-                   '61.8%': high - (diff * 0.618),
-                   '78.6%': high - (diff * 0.786),
-                   '100%': low
-               };
-           }
-       }
+            static fibonacciLevels(high, low) {
+                const diff = high - low;
+                return {
+                    '0%': high,
+                    '23.6%': high - (diff * 0.236),
+                    '38.2%': high - (diff * 0.382),
+                    '50%': high - (diff * 0.5),
+                    '61.8%': high - (diff * 0.618),
+                    '78.6%': high - (diff * 0.786),
+                    '100%': low
+                };
+            }
+        }
 
-       // Gerador de dados históricos simulados
-       function generateHistoricalData(symbol, periods = 100) {
-           const basePrice = currencyPairs[symbol].price;
-           const prices = [];
-           let currentPrice = basePrice * 0.995; // Começar um pouco abaixo
+        // Gerador de dados históricos simulados
+        function generateHistoricalData(symbol, periods = 100) {
+            const basePrice = currencyPairs[symbol].price;
+            const prices = [];
+            let currentPrice = basePrice * 0.995; // Começar um pouco abaixo
 
-           for (let i = 0; i < periods; i++) {
-               const change = (Math.random() - 0.5) * 0.01; // Variação de ±1%
-               currentPrice = Math.max(0, currentPrice * (1 + change));
-               prices.push(currentPrice);
-           }
+            for (let i = 0; i < periods; i++) {
+                const change = (Math.random() - 0.5) * 0.01; // Variação de ±1%
+                currentPrice = Math.max(0, currentPrice * (1 + change));
+                prices.push(currentPrice);
+            }
 
-           // Garantir que o último preço seja próximo ao atual
-           prices[prices.length - 1] = basePrice;
-           
-           return prices;
-       }
+            // Garantir que o último preço seja próximo ao atual
+            prices[prices.length - 1] = basePrice;
+            
+            return prices;
+        }
 
-       // Análise completa de um par de moedas
-       function analyzeMarket(symbol) {
-           const prices = generateHistoricalData(symbol);
-           const currentPrice = prices[prices.length - 1];
-           
-           // Calcular todos os indicadores
-           const rsi = TechnicalIndicators.calculateRSI(prices);
-           const macd = TechnicalIndicators.calculateMACD(prices);
-           const bollinger = TechnicalIndicators.calculateBollinger(prices);
-           const ema20 = TechnicalIndicators.calculateEMA(prices.slice(-20), 20);
-           const ema50 = TechnicalIndicators.calculateEMA(prices.slice(-50), 50);
-           
-           // Fibonacci (usando high/low dos últimos 50 períodos)
-           const recent50 = prices.slice(-50);
-           const high = Math.max(...recent50);
-           const low = Math.min(...recent50);
-           const fib = TechnicalIndicators.fibonacciLevels(high, low);
-           
-           // Análise de confluência
-           const signals = {
-               rsi: rsi > 50 ? 'bullish' : rsi < 50 ? 'bearish' : 'neutral',
-               macd: macd.macd > macd.signal ? 'bullish' : 'bearish',
-               bollinger: currentPrice > bollinger.upper ? 'bullish' : 
-                         currentPrice < bollinger.lower ? 'bullish' : 'neutral',
-               maCross: ema20 > ema50 ? 'bullish' : 'bearish',
-               volume: Math.random() > 0.3 ? 'bullish' : 'neutral', // Volume simulado
-               momentum: Math.abs(prices[prices.length - 1] - prices[prices.length - 5]) > 0.001 ? 'bullish' : 'neutral',
-               fibonacci: currentPrice > fib['61.8%'] ? 'bullish' : 'bearish',
-               support: Math.random() > 0.4 ? 'bullish' : 'bearish' // S/R simulado
-           };
+        // Análise completa de um par de moedas
+        function analyzeMarket(symbol) {
+            const prices = generateHistoricalData(symbol);
+            const currentPrice = prices[prices.length - 1];
+            
+            // Calcular todos os indicadores
+            const rsi = TechnicalIndicators.calculateRSI(prices);
+            const macd = TechnicalIndicators.calculateMACD(prices);
+            const bollinger = TechnicalIndicators.calculateBollinger(prices);
+            const ema20 = TechnicalIndicators.calculateEMA(prices.slice(-20), 20);
+            const ema50 = TechnicalIndicators.calculateEMA(prices.slice(-50), 50);
+            
+            // Fibonacci (usando high/low dos últimos 50 períodos)
+            const recent50 = prices.slice(-50);
+            const high = Math.max(...recent50);
+            const low = Math.min(...recent50);
+            const fib = TechnicalIndicators.fibonacciLevels(high, low);
+            
+            // Análise de confluência
+            const signals = {
+                rsi: rsi > 50 ? 'bullish' : rsi < 50 ? 'bearish' : 'neutral',
+                macd: macd.macd > macd.signal ? 'bullish' : 'bearish',
+                bollinger: currentPrice > bollinger.upper ? 'bullish' : 
+                          currentPrice < bollinger.lower ? 'bullish' : 'neutral',
+                maCross: ema20 > ema50 ? 'bullish' : 'bearish',
+                volume: Math.random() > 0.3 ? 'bullish' : 'neutral', // Volume simulado
+                momentum: Math.abs(prices[prices.length - 1] - prices[prices.length - 5]) > 0.001 ? 'bullish' : 'neutral',
+                fibonacci: currentPrice > fib['61.8%'] ? 'bullish' : 'bearish',
+                support: Math.random() > 0.4 ? 'bullish' : 'bearish' // S/R simulado
+            };
 
-           // Calcular confluência
-           const bullishCount = Object.values(signals).filter(s => s === 'bullish').length;
-           const totalSignals = Object.keys(signals).length;
-           const confluenceScore = bullishCount / totalSignals;
-           
-           // Determinar direção final
-           const direction = confluenceScore > 0.6 ? 'CALL' : confluenceScore < 0.4 ? 'PUT' : 
-                           Math.random() > 0.5 ? 'CALL' : 'PUT';
-           
-           // Calcular probabilidade baseada na confluência
-           const baseProbability = 75;
-           const confluenceBonus = confluenceScore * 20;
-           const timeBonus = isOptimalTradingTime() ? 5 : 0;
-           const finalProbability = Math.min(99.9, baseProbability + confluenceBonus + timeBonus);
+            // Calcular confluência
+            const bullishCount = Object.values(signals).filter(s => s === 'bullish').length;
+            const totalSignals = Object.keys(signals).length;
+            const confluenceScore = bullishCount / totalSignals;
+            
+            // Determinar direção final
+            const direction = confluenceScore > 0.6 ? 'CALL' : confluenceScore < 0.4 ? 'PUT' : 
+                            Math.random() > 0.5 ? 'CALL' : 'PUT';
+            
+            // Calcular probabilidade baseada na confluência
+            const baseProbability = 75;
+            const confluenceBonus = confluenceScore * 20;
+            const timeBonus = isOptimalTradingTime() ? 5 : 0;
+            const finalProbability = Math.min(99.9, baseProbability + confluenceBonus + timeBonus);
 
-           return {
-               symbol,
-               currentPrice,
-               direction,
-               probability: finalProbability,
-               confluence: confluenceScore,
-               signals,
-               indicators: { rsi, macd, bollinger, ema20, ema50, fib },
-               confluenceText: `${bullishCount}/${totalSignals} INDICADORES ALINHADOS`
-           };
-       }
+            return {
+                symbol,
+                currentPrice,
+                direction,
+                probability: finalProbability,
+                confluence: confluenceScore,
+                signals,
+                indicators: { rsi, macd, bollinger, ema20, ema50, fib },
+                confluenceText: `${bullishCount}/${totalSignals} INDICADORES ALINHADOS`
+            };
+        }
 
-       // Verificar se é horário ótimo de trading
-       function isOptimalTradingTime() {
-           const now = new Date();
-           const hour = now.getHours();
-           
-           // Sessões principais de trading
-           // Londres: 8-17h, Nova York: 13-22h, Tóóio: 0-9h
-           return (hour >= 8 && hour <= 22) || (hour >= 0 && hour <= 2);
-       }
+        // Verificar se é horário ótimo de trading
+        function isOptimalTradingTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            // Sessões principais de trading
+            // Londres: 8-17h, Nova York: 13-22h, Tóóio: 0-9h
+            return (hour >= 8 && hour <= 22) || (hour >= 0 && hour <= 2);
+        }
 
-       // Calcular expiração correta baseada no tipo
-       function calculateExpiration(entryTime, timeframe, marketType) {
-           const [hours, minutes, seconds] = entryTime.split(':').map(Number);
-           const entryDate = new Date();
-           entryDate.setHours(hours, minutes, seconds, 0);
-           
-           let expirationDate;
-           const tfMinutes = timeframe === 'M1' ? 1 : timeframe === 'M5' ? 5 : 15;
-           
-           if (marketType === 'digital') {
-               // Digitais: próximo horário "cheio"
-               expirationDate = new Date(entryDate);
-               const currentMinutes = entryDate.getMinutes();
-               const nextInterval = Math.ceil(currentMinutes / tfMinutes) * tfMinutes;
-               
-               if (nextInterval >= 60) {
-                   expirationDate.setHours(entryDate.getHours() + 1);
-                   expirationDate.setMinutes(0, 0, 0);
-               } else {
-                   expirationDate.setMinutes(nextInterval, 0, 0);
-               }
-           } else {
-               // Blitz/OTC: tempo corrido
-               expirationDate = new Date(entryDate.getTime() + (tfMinutes * 60 * 1000));
-           }
-           
-           return expirationDate.toLocaleTimeString('pt-BR', {
-               hour: '2-digit',
-               minute: '2-digit',
-               second: '2-digit'
-           });
-       }
+        // Calcular expiração correta baseada no tipo
+        function calculateExpiration(entryTime, timeframe, marketType) {
+            const [hours, minutes, seconds] = entryTime.split(':').map(Number);
+            const entryDate = new Date();
+            entryDate.setHours(hours, minutes, seconds, 0);
+            
+            let expirationDate;
+            const tfMinutes = timeframe === 'M1' ? 1 : timeframe === 'M5' ? 5 : 15;
+            
+            if (marketType === 'digital') {
+                // Digitais: próximo horário "cheio"
+                expirationDate = new Date(entryDate);
+                const currentMinutes = entryDate.getMinutes();
+                const nextInterval = Math.ceil(currentMinutes / tfMinutes) * tfMinutes;
+                
+                if (nextInterval >= 60) {
+                    expirationDate.setHours(entryDate.getHours() + 1);
+                    expirationDate.setMinutes(0, 0, 0);
+                } else {
+                    expirationDate.setMinutes(nextInterval, 0, 0);
+                }
+            } else {
+                // Blitz/OTC: tempo corrido
+                expirationDate = new Date(entryDate.getTime() + (tfMinutes * 60 * 1000));
+            }
+            
+            return expirationDate.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
 
-       // Atualizar interface com nova análise
-       function updateSignalDisplay(analysis) {
-           // Informações básicas
-           document.getElementById('assetName').textContent = currencyPairs[analysis.symbol].name;
-           document.getElementById('currentPrice').textContent = analysis.currentPrice.toFixed(4);
-           
-           // Direção
-           const directionEl = document.getElementById('direction');
-           directionEl.textContent = analysis.direction === 'CALL' ? '📈 CALL' : '📉 PUT';
-           directionEl.className = `direction ${analysis.direction.toLowerCase()}`;
-           
-           // Horários em tempo real
-           const now = new Date();
-           const entryTime = now.toLocaleTimeString('pt-BR', {
-               hour: '2-digit',
-               minute: '2-digit',
-               second: '2-digit'
-           });
-           const expirationTime = calculateExpiration(entryTime, currentTimeframe, currentMarket);
-           
-           document.getElementById('entryTime').textContent = entryTime;
-           document.getElementById('expirationTime').textContent = expirationTime;
-           
-           // Probabilidade
-           document.getElementById('probability').textContent = analysis.probability.toFixed(1) + '%';
-           
-           // Barra de confiança
-           const confidenceBar = document.getElementById('confidenceBar');
-           confidenceBar.style.width = analysis.probability + '%';
-           confidenceBar.textContent = `CONFIANÇA: ${analysis.probability.toFixed(1)}%`;
-           
-           // Indicadores técnicos
-           updateIndicators(analysis.signals);
-           
-           // Confluência
-           document.querySelector('.confluence-score').innerHTML = 
-               `🎯 CONFLUÊNCIA: ${analysis.confluenceText}`;
-           
-           // Tipo de mercado
-           const marketTypeEl = document.getElementById('marketType');
-           marketTypeEl.textContent = currentMarket.toUpperCase();
-           marketTypeEl.className = `market-type type-${currentMarket}`;
-           
-           // Classe do card
-           const signalCard = document.getElementById('signalCard');
-           signalCard.className = `signal-card ${currentMarket}`;
-           
-           console.log('📊 ANÁLISE COMPLETA:', analysis.symbol);
-           console.log('📈 Direção:', analysis.direction);
-           console.log('🎯 Probabilidade:', analysis.probability.toFixed(1) + '%');
-           console.log('🔍 Confluência:', analysis.confluenceText);
-           console.log('⏰ Entrada:', entryTime, '→ Expiração:', expirationTime);
-       }
+        // Atualizar interface com nova análise
+        function updateSignalDisplay(analysis) {
+            // Informações básicas
+            document.getElementById('assetName').textContent = currencyPairs[analysis.symbol].name;
+            document.getElementById('currentPrice').textContent = analysis.currentPrice.toFixed(4);
+            
+            // Direção
+            const directionEl = document.getElementById('direction');
+            directionEl.textContent = analysis.direction === 'CALL' ? '📈 CALL' : '📉 PUT';
+            directionEl.className = `direction ${analysis.direction.toLowerCase()}`;
+            
+            // Horários em tempo real
+            const now = new Date();
+            const entryTime = now.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const expirationTime = calculateExpiration(entryTime, currentTimeframe, currentMarket);
+            
+            document.getElementById('entryTime').textContent = entryTime;
+            document.getElementById('expirationTime').textContent = expirationTime;
+            
+            // Probabilidade
+            document.getElementById('probability').textContent = analysis.probability.toFixed(1) + '%';
+            
+            // Barra de confiança
+            const confidenceBar = document.getElementById('confidenceBar');
+            confidenceBar.style.width = analysis.probability + '%';
+            confidenceBar.textContent = `CONFIANÇA: ${analysis.probability.toFixed(1)}%`;
+            
+            // Indicadores técnicos
+            updateIndicators(analysis.signals);
+            
+            // Confluência
+            document.querySelector('.confluence-score').innerHTML = 
+                `🎯 CONFLUÊNCIA: ${analysis.confluenceText}`;
+            
+            // Tipo de mercado
+            const marketTypeEl = document.getElementById('marketType');
+            marketTypeEl.textContent = currentMarket.toUpperCase();
+            marketTypeEl.className = `market-type type-${currentMarket}`;
+            
+            // Classe do card
+            const signalCard = document.getElementById('signalCard');
+            signalCard.className = `signal-card ${currentMarket}`;
+            
+            console.log('📊 ANÁLISE COMPLETA:', analysis.symbol);
+            console.log('📈 Direção:', analysis.direction);
+            console.log('🎯 Probabilidade:', analysis.probability.toFixed(1) + '%');
+            console.log('🔍 Confluência:', analysis.confluenceText);
+            console.log('⏰ Entrada:', entryTime, '→ Expiração:', expirationTime);
+        }
 
-       // Atualizar indicadores na interface
-       function updateIndicators(signals) {
-           const indicators = {
-               'rsi': signals.rsi,
-               'macd': signals.macd,
-               'bollinger': signals.bollinger,
-               'volume': signals.volume,
-               'maCross': signals.maCross,
-               'fibonacci': signals.fibonacci,
-               'support': signals.support,
-               'momentum': signals.momentum
-           };
+        // Atualizar indicadores na interface
+        function updateIndicators(signals) {
+            const indicators = {
+                'rsi': signals.rsi,
+                'macd': signals.macd,
+                'bollinger': signals.bollinger,
+                'volume': signals.volume,
+                'maCross': signals.maCross,
+                'fibonacci': signals.fibonacci,
+                'support': signals.support,
+                'momentum': signals.momentum
+            };
 
-           Object.keys(indicators).forEach(key => {
-               const element = document.getElementById(key);
-               if (element) {
-                   const status = indicators[key];
-                   element.textContent = status.toUpperCase();
-                   element.className = `indicator-status ${status}`;
-               }
-           });
-       }
+            Object.keys(indicators).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    const status = indicators[key];
+                    element.textContent = status.toUpperCase();
+                    element.className = `indicator-status ${status}`;
+                }
+            });
+        }
 
-       // Trocar tipo de mercado
-       function switchMarket(market) {
-           currentMarket = market;
-           
-           // Atualizar tabs
-           document.querySelectorAll('.market-tab').forEach(tab => {
-               tab.classList.remove('active');
-           });
-           document.querySelector(`[data-market="${market}"]`).classList.add('active');
-           
-           // Nova análise
-           performAnalysis();
-       }
+        // Trocar tipo de mercado
+        function switchMarket(market) {
+            currentMarket = market;
+            
+            // Atualizar tabs
+            document.querySelectorAll('.market-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-market="${market}"]`).classList.add('active');
+            
+            // Nova análise
+            performAnalysis();
+        }
 
-       // Selecionar timeframe
-       function selectTimeframe(tf) {
-           currentTimeframe = tf;
-           
-           // Atualizar botões
-           document.querySelectorAll('.timeframe-btn').forEach(btn => {
-               btn.classList.remove('active');
-           });
-           document.querySelector(`[data-tf="${tf}"]`).classList.add('active');
-           
-           // Nova análise
-           performAnalysis();
-       }
+        // Selecionar timeframe
+        function selectTimeframe(tf) {
+            currentTimeframe = tf;
+            
+            // Atualizar botões
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tf="${tf}"]`).classList.add('active');
+            
+            // Nova análise
+            performAnalysis();
+        }
 
-       // Executar análise completa
-       function performAnalysis() {
-           if (isAnalyzing) return;
-           
-           isAnalyzing = true;
-           
-           // Simular tempo de análise
-           setTimeout(() => {
-               // Analisar todos os pares e escolher o melhor
-               let bestAnalysis = null;
-               let bestScore = 0;
-               
-               Object.keys(currencyPairs).forEach(symbol => {
-                   const analysis = analyzeMarket(symbol);
-                   const score = analysis.probability * analysis.confluence;
-                   
-                   if (score > bestScore) {
-                       bestScore = score;
-                       bestAnalysis = analysis;
-                   }
-               });
-               
-               if (bestAnalysis && bestAnalysis.probability >= 85) {
-                   updateSignalDisplay(bestAnalysis);
-               }
-               
-               isAnalyzing = false;
-           }, 3000);
-       }
+        // Executar análise completa
+        function performAnalysis() {
+            if (isAnalyzing) return;
+            
+            isAnalyzing = true;
+            const statusPanel = document.getElementById('statusPanel');
+            statusPanel.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="loading"></div>
+                    <span>Analisando ${Object.keys(currencyPairs).length} pares de moedas...</span>
+                </div>
+            `;
+            
+            // Simular tempo de análise
+            setTimeout(() => {
+                // Analisar todos os pares e escolher o melhor
+                let bestAnalysis = null;
+                let bestScore = 0;
+                
+                Object.keys(currencyPairs).forEach(symbol => {
+                    const analysis = analyzeMarket(symbol);
+                    const score = analysis.probability * analysis.confluence;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestAnalysis = analysis;
+                    }
+                });
+                
+                if (bestAnalysis && bestAnalysis.probability >= 85) {
+                    updateSignalDisplay(bestAnalysis);
+                    statusPanel.innerHTML = `
+                        <div style="color: #00ff88;">
+                            ✅ Análise concluída - Sinal confirmado com ${bestAnalysis.probability.toFixed(1)}% de probabilidade
+                        </div>
+                    `;
+                } else {
+                    statusPanel.innerHTML = `
+                        <div style="color: #ffaa00;">
+                            ⚠️ Aguardando confluência ideal (mín. 85% de probabilidade)
+                        </div>
+                    `;
+                }
+                
+                isAnalyzing = false;
+            }, 3000);
+        }
 
-       // Executar sinal com monitoramento automático
-       function executeSignal() {
-           const btn = document.getElementById('executeBtn');
-           if (isMonitoring) return; // Evitar execução dupla
-           
-           btn.textContent = '⚡ EXECUTANDO...';
-           btn.style.background = 'linear-gradient(45deg, #ff9900, #cc7700)';
-           btn.disabled = true;
-           
-           // Capturar dados do sinal atual
-           const assetName = document.getElementById('assetName').textContent;
-           const direction = document.getElementById('direction').textContent.includes('CALL') ? 'CALL' : 'PUT';
-           const entryTime = document.getElementById('entryTime').textContent;
-           const expirationTime = document.getElementById('expirationTime').textContent;
-           const entryPrice = parseFloat(document.getElementById('currentPrice').textContent);
-           
-           // Encontrar o símbolo correspondente
-           const symbol = Object.keys(currencyPairs).find(s => currencyPairs[s].name === assetName);
-           
-           if (!symbol) {
-               console.error('Símbolo não encontrado:', assetName);
-               btn.disabled = false;
-               return;
-           }
-           
-           // Configurar operação
-           currentOperation = {
-               symbol,
-               assetName,
-               direction,
-               entryTime,
-               expirationTime,
-               entryPrice,
-               startTime: Date.now()
-           };
-           
-           // Calcular tempo até expiração
-           const now = new Date();
-           const [expHour, expMin, expSec] = expirationTime.split(':').map(Number);
-           const expirationDate = new Date();
-           expirationDate.setHours(expHour, expMin, expSec, 0);
-           
-           let timeToExpiration = expirationDate.getTime() - now.getTime();
-           if (timeToExpiration <= 0) {
-               timeToExpiration += 24 * 60 * 60 * 1000; // Adicionar 24h se já passou
-           }
-           
-           // Máximo de 16 minutos (para M15)
-           timeToExpiration = Math.min(timeToExpiration, 16 * 60 * 1000);
-           
-           console.log('🚀 OPERAÇÃO INICIADA:');
-           console.log('Asset:', assetName);
-           console.log('Direção:', direction);
-           console.log('Preço entrada:', entryPrice);
-           console.log('Tempo para expiração:', Math.floor(timeToExpiration / 1000), 'segundos');
-           
-           // Iniciar monitoramento
-           startMonitoring(timeToExpiration);
-       }
-       
-       // Iniciar monitoramento da operação
-       function startMonitoring(timeToExpiration) {
-           isMonitoring = true;
-           let remainingTime = Math.floor(timeToExpiration / 1000);
-           
-           // Mostrar painel de monitoramento
-           document.getElementById('signalCard').style.display = 'none';
-           document.getElementById('monitoringPanel').style.display = 'block';
-           document.getElementById('resultPanel').style.display = 'none';
-           
-           // Configurar dados iniciais
-           document.getElementById('entryPriceMonitor').textContent = currentOperation.entryPrice.toFixed(4);
-           document.getElementById('directionMonitor').textContent = currentOperation.direction;
-           document.getElementById('statusMonitor').textContent = 'ATIVO';
-           
-           // Timer de countdown
-           const countdownInterval = setInterval(() => {
-               remainingTime--;
-               
-               const minutes = Math.floor(remainingTime / 60);
-               const seconds = remainingTime % 60;
-               document.getElementById('countdownDisplay').textContent = 
-                   `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-               
-               // Atualizar preço atual
-               const currentPrice = currencyPairs[currentOperation.symbol].price;
-               document.getElementById('currentPriceMonitor').textContent = currentPrice.toFixed(4);
-               
-               // Quando chegar ao fim
-               if (remainingTime <= 0) {
-                   clearInterval(countdownInterval);
-                   finalizarOperacao(currentPrice);
-               }
-           }, 1000);
-       }
-       
-       // Finalizar operação e calcular resultado
-       function finalizarOperacao(finalPrice) {
-           const entryPrice = currentOperation.entryPrice;
-           const direction = currentOperation.direction;
-           
-           // Determinar resultado baseado na direção e preços
-           let isGreen = false;
-           if (direction === 'CALL' && finalPrice > entryPrice) {
-               isGreen = true;
-           } else if (direction === 'PUT' && finalPrice < entryPrice) {
-               isGreen = true;
-           }
-           
-           // Atualizar estatísticas
-           if (isGreen) {
-               dailyStats.green++;
-               monthlyStats.green++;
-           } else {
-               dailyStats.red++;
-               monthlyStats.red++;
-           }
-           
-           // Salvar estatísticas
-           saveStats();
-           updateStatsDisplay();
-           
-           // Mostrar resultado
-           showResult(isGreen, entryPrice, finalPrice);
-           
-           console.log('📊 RESULTADO:', isGreen ? 'GREEN' : 'LOSS');
-           console.log('💰 Preços:', entryPrice.toFixed(4), '→', finalPrice.toFixed(4));
-           console.log('📈 Stats diárias:', `${dailyStats.green}/${dailyStats.red}`);
-           console.log('📊 Stats mensais:', `${monthlyStats.green}/${monthlyStats.red}`);
-       }
-       
-       // Mostrar resultado da operação
-       function showResult(isGreen, entryPrice, finalPrice) {
-           // Esconder painel de monitoramento
-           document.getElementById('monitoringPanel').style.display = 'none';
-           
-           // Mostrar resultado
-           const resultPanel = document.getElementById('resultPanel');
-           const resultText = document.getElementById('resultText');
-           const resultDetails = document.getElementById('resultDetails');
-           
-           if (isGreen) {
-               resultPanel.className = 'result-panel result-green';
-               resultText.textContent = '🎯 GREEN! Acertou!';
-           } else {
-               resultPanel.className = 'result-panel result-red';
-               resultText.textContent = '❌ LOSS! Errou!';
-           }
-           
-           resultDetails.textContent = 
-               `Entrada: ${entryPrice.toFixed(4)} → Expiração: ${finalPrice.toFixed(4)} (${currentOperation.direction})`;
-           
-           resultPanel.style.display = 'block';
-           
-           // Reset após 8 segundos
-           setTimeout(() => {
-               resetSystem();
-           }, 8000);
-       }
-       
-       // Reset do sistema para próximo sinal
-       function resetSystem() {
-           isMonitoring = false;
-           currentOperation = null;
-           
-           // Esconder painéis
-           document.getElementById('monitoringPanel').style.display = 'none';
-           document.getElementById('resultPanel').style.display = 'none';
-           
-           // Mostrar signal card
-           document.getElementById('signalCard').style.display = 'block';
-           
-           // Reset botão
-           const btn = document.getElementById('executeBtn');
-           btn.textContent = '🚀 EXECUTAR SINAL';
-           btn.style.background = 'linear-gradient(45deg, #00ff88, #00cc66)';
-           btn.disabled = false;
-           
-           // Gerar novo sinal
-           performAnalysis();
-       }
+        // Executar sinal com monitoramento automático
+        function executeSignal() {
+            const btn = document.getElementById('executeBtn');
+            if (isMonitoring) return; // Evitar execução dupla
+            
+            btn.textContent = '⚡ EXECUTANDO...';
+            btn.style.background = 'linear-gradient(45deg, #ff9900, #cc7700)';
+            btn.disabled = true;
+            
+            // Capturar dados do sinal atual
+            const assetName = document.getElementById('assetName').textContent;
+            const direction = document.getElementById('direction').textContent.includes('CALL') ? 'CALL' : 'PUT';
+            const entryTime = document.getElementById('entryTime').textContent;
+            const expirationTime = document.getElementById('expirationTime').textContent;
+            const entryPrice = parseFloat(document.getElementById('currentPrice').textContent);
+            
+            // Encontrar o símbolo correspondente
+            const symbol = Object.keys(currencyPairs).find(s => currencyPairs[s].name === assetName);
+            
+            if (!symbol) {
+                console.error('Símbolo não encontrado:', assetName);
+                btn.disabled = false;
+                return;
+            }
+            
+            // Configurar operação
+            currentOperation = {
+                symbol,
+                assetName,
+                direction,
+                entryTime,
+                expirationTime,
+                entryPrice,
+                startTime: Date.now()
+            };
+            
+            // Calcular tempo até expiração
+            const now = new Date();
+            const [expHour, expMin, expSec] = expirationTime.split(':').map(Number);
+            const expirationDate = new Date();
+            expirationDate.setHours(expHour, expMin, expSec, 0);
+            
+            let timeToExpiration = expirationDate.getTime() - now.getTime();
+            if (timeToExpiration <= 0) {
+                timeToExpiration += 24 * 60 * 60 * 1000; // Adicionar 24h se já passou
+            }
+            
+            // Máximo de 16 minutos (para M15)
+            timeToExpiration = Math.min(timeToExpiration, 16 * 60 * 1000);
+            
+            console.log('🚀 OPERAÇÃO INICIADA:');
+            console.log('Asset:', assetName);
+            console.log('Direção:', direction);
+            console.log('Preço entrada:', entryPrice);
+            console.log('Tempo para expiração:', Math.floor(timeToExpiration / 1000), 'segundos');
+            
+            // Iniciar monitoramento
+            startMonitoring(timeToExpiration);
+        }
+        
+        // Iniciar monitoramento da operação
+        function startMonitoring(timeToExpiration) {
+            isMonitoring = true;
+            let remainingTime = Math.floor(timeToExpiration / 1000);
+            
+            // Mostrar painel de monitoramento
+            document.getElementById('signalCard').style.display = 'none';
+            document.getElementById('monitoringPanel').style.display = 'block';
+            document.getElementById('resultPanel').style.display = 'none';
+            
+            // Configurar dados iniciais
+            document.getElementById('entryPriceMonitor').textContent = currentOperation.entryPrice.toFixed(4);
+            document.getElementById('directionMonitor').textContent = currentOperation.direction;
+            document.getElementById('statusMonitor').textContent = 'ATIVO';
+            
+            // Timer de countdown
+            const countdownInterval = setInterval(() => {
+                remainingTime--;
+                
+                const minutes = Math.floor(remainingTime / 60);
+                const seconds = remainingTime % 60;
+                document.getElementById('countdownDisplay').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Atualizar preço atual
+                const currentPrice = currencyPairs[currentOperation.symbol].price;
+                document.getElementById('currentPriceMonitor').textContent = currentPrice.toFixed(4);
+                
+                // Quando chegar ao fim
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    finalizarOperacao(currentPrice);
+                }
+            }, 1000);
+        }
+        
+        // Finalizar operação e calcular resultado
+        function finalizarOperacao(finalPrice) {
+            const entryPrice = currentOperation.entryPrice;
+            const direction = currentOperation.direction;
+            
+            // Determinar resultado baseado na direção e preços
+            let isGreen = false;
+            if (direction === 'CALL' && finalPrice > entryPrice) {
+                isGreen = true;
+            } else if (direction === 'PUT' && finalPrice < entryPrice) {
+                isGreen = true;
+            }
+            
+            // Atualizar estatísticas
+            if (isGreen) {
+                dailyStats.green++;
+                monthlyStats.green++;
+            } else {
+                dailyStats.red++;
+                monthlyStats.red++;
+            }
+            
+            // Salvar estatísticas
+            saveStats();
+            updateStatsDisplay();
+            
+            // Mostrar resultado
+            showResult(isGreen, entryPrice, finalPrice);
+            
+            console.log('📊 RESULTADO:', isGreen ? 'GREEN' : 'LOSS');
+            console.log('💰 Preços:', entryPrice.toFixed(4), '→', finalPrice.toFixed(4));
+            console.log('📈 Stats diárias:', `${dailyStats.green}/${dailyStats.red}`);
+            console.log('📊 Stats mensais:', `${monthlyStats.green}/${monthlyStats.red}`);
+        }
+        
+        // Mostrar resultado da operação
+        function showResult(isGreen, entryPrice, finalPrice) {
+            // Esconder painel de monitoramento
+            document.getElementById('monitoringPanel').style.display = 'none';
+            
+            // Mostrar resultado
+            const resultPanel = document.getElementById('resultPanel');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            if (isGreen) {
+                resultPanel.className = 'result-panel result-green';
+                resultText.textContent = '🎯 GREEN! Acertou!';
+            } else {
+                resultPanel.className = 'result-panel result-red';
+                resultText.textContent = '❌ LOSS! Errou!';
+            }
+            
+            resultDetails.textContent = 
+                `Entrada: ${entryPrice.toFixed(4)} → Expiração: ${finalPrice.toFixed(4)} (${currentOperation.direction})`;
+            
+            resultPanel.style.display = 'block';
+            
+            // Reset após 8 segundos
+            setTimeout(() => {
+                resetSystem();
+            }, 8000);
+        }
+        
+        // Reset do sistema para próximo sinal
+        function resetSystem() {
+            isMonitoring = false;
+            currentOperation = null;
+            
+            // Esconder painéis
+            document.getElementById('monitoringPanel').style.display = 'none';
+            document.getElementById('resultPanel').style.display = 'none';
+            
+            // Mostrar signal card
+            document.getElementById('signalCard').style.display = 'block';
+            
+            // Reset botão
+            const btn = document.getElementById('executeBtn');
+            btn.textContent = '🚀 EXECUTAR SINAL';
+            btn.style.background = 'linear-gradient(45deg, #00ff88, #00cc66)';
+            btn.disabled = false;
+            
+            // Gerar novo sinal
+            performAnalysis();
+        }
 
-       // Forçar nova análise
-       function forceAnalysis() {
-           if (isAnalyzing || isMonitoring) return;
-           performAnalysis();
-       }
+        // Forçar nova análise
+        function forceAnalysis() {
+            if (isAnalyzing) return;
+            performAnalysis();
+        }
 
-       // Atualizar preços em tempo real
-       function updateRealTimePrices() {
-           Object.keys(currencyPairs).forEach(symbol => {
-               const pair = currencyPairs[symbol];
-               const variation = (Math.random() - 0.5) * 0.002; // ±0.2%
-               pair.price = Math.max(0.1, pair.price * (1 + variation));
-           });
+        // Atualizar preços em tempo real
+        function updateRealTimePrices() {
+            Object.keys(currencyPairs).forEach(symbol => {
+                const pair = currencyPairs[symbol];
+                const variation = (Math.random() - 0.5) * 0.002; // ±0.2%
+                pair.price = Math.max(0.1, pair.price * (1 + variation));
+            });
 
-           // Atualizar preço na tela se for o ativo atual
-           const currentSymbol = Object.keys(currencyPairs).find(s => 
-               currencyPairs[s].name === document.getElementById('assetName').textContent
-           );
-           
-           if (currentSymbol && !isMonitoring) {
-               document.getElementById('currentPrice').textContent = 
-                   currencyPairs[currentSymbol].price.toFixed(4);
-           }
-       }
+            // Atualizar preço na tela se for o ativo atual
+            const currentSymbol = Object.keys(currencyPairs).find(s => 
+                currencyPairs[s].name === document.getElementById('assetName').textContent
+            );
+            
+            if (currentSymbol) {
+                document.getElementById('currentPrice').textContent = 
+                    currencyPairs[currentSymbol].price.toFixed(4);
+            }
+        }
 
-       // Atualizar timer do próximo sinal
-       function updateSignalTimer() {
-           signalTimer--;
-           
-           const minutes = Math.floor(signalTimer / 60);
-           const seconds = signalTimer % 60;
-           
-           document.getElementById('nextSignalTimer').textContent = 
-               `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-           
-           if (signalTimer <= 0) {
-               signalTimer = Math.floor(Math.random() * 300) + 120; // 2-7 minutos
-               if (!isAnalyzing && !isMonitoring) {
-                   performAnalysis(); // Nova análise automática
-               }
-           }
-       }
+        // Atualizar timer do próximo sinal
+        function updateSignalTimer() {
+            signalTimer--;
+            
+            const minutes = Math.floor(signalTimer / 60);
+            const seconds = signalTimer % 60;
+            
+            document.getElementById('nextSignalTimer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (signalTimer <= 0) {
+                signalTimer = Math.floor(Math.random() * 300) + 120; // 2-7 minutos
+                performAnalysis(); // Nova análise automática
+            }
+        }
 
-       // Atualizar informações da sessão
-       function updateSessionInfo() {
-           const now = new Date();
-           const hour = now.getHours();
-           
-           // Determinar sessão de trading
-           let session = 'TOKYO';
-           if (hour >= 8 && hour < 17) session = 'LONDON';
-           if (hour >= 13 && hour < 22) session = 'NY';
-           
-           document.getElementById('sessionType').textContent = session;
-       }
+        // Atualizar informações da sessão
+        function updateSessionInfo() {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            // Determinar sessão de trading
+            let session = 'TOKYO';
+            if (hour >= 8 && hour < 17) session = 'LONDON';
+            if (hour >= 13 && hour < 22) session = 'NY';
+            
+            document.getElementById('sessionType').textContent = session;
+        }
 
-       // Inicialização
-       document.addEventListener('DOMContentLoaded', function() {
-           console.log('🧠 IA POLARIUM REAL - SISTEMA INICIADO!');
-           console.log('📊 Recursos Implementados:');
-           console.log('✅ Análise Técnica Real (RSI, MACD, Bollinger, Fibonacci)');
-           console.log('✅ Confluência de 8+ Indicadores');
-           console.log('✅ Horários em Tempo Real');
-           console.log('✅ Expiração Correta (Digital/Blitz/OTC)');
-           console.log('✅ Preços Simulados Realistas');
-           console.log('✅ Sessões de Trading');
-           console.log('✅ Probabilidade Baseada em Confluência');
-           console.log('✅ PLACAR AUTOMÁTICO - Diário e Mensal');
-           console.log('✅ Monitoramento de Preços Real');
-           console.log('✅ Cálculo Automático de GREEN/LOSS');
-           
-           // Carregar estatísticas salvas
-           loadStats();
-           
-           // Primeira análise
-           setTimeout(() => {
-               performAnalysis();
-           }, 1000);
-           
-           // Timers
-           setInterval(updateRealTimePrices, 2000); // Atualizar preços a cada 2s
-           setInterval(updateSignalTimer, 1000); // Timer do próximo sinal
-           setInterval(updateSessionInfo, 5000); // Sessão a cada 5s
-           
-           // Análise automática a cada 5 minutos
-           setInterval(() => {
-               if (!isAnalyzing && !isMonitoring) {
-                   performAnalysis();
-               }
-           }, 300000);
-       });
-   </script>
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧠 IA POLARIUM REAL - SISTEMA INICIADO!');
+            console.log('📊 Recursos Implementados:');
+            console.log('✅ Análise Técnica Real (RSI, MACD, Bollinger, Fibonacci)');
+            console.log('✅ Confluência de 8+ Indicadores');
+            console.log('✅ Horários em Tempo Real');
+            console.log('✅ Expiração Correta (Digital/Blitz/OTC)');
+            console.log('✅ Preços Simulados Realistas');
+            console.log('✅ Sessões de Trading');
+            console.log('✅ Probabilidade Baseada em Confluência');
+            console.log('✅ PLACAR AUTOMÁTICO - Diário e Mensal');
+            console.log('✅ Monitoramento de Preços Real');
+            console.log('✅ Cálculo Automático de GREEN/LOSS');
+            
+            // Carregar estatísticas salvas
+            loadStats();
+            
+            // INICIAR IMEDIATAMENTE com sinal atual
+            const now = new Date();
+            const entryTime = now.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const expirationTime = calculateExpiration(entryTime, currentTimeframe, currentMarket);
+            
+            document.getElementById('entryTime').textContent = entryTime;
+            document.getElementById('expirationTime').textContent = expirationTime;
+            
+            // Primeira análise IMEDIATA
+            performAnalysis();
+            
+            // Timers
+            setInterval(updateRealTimePrices, 2000); // Atualizar preços a cada 2s
+            setInterval(updateSignalTimer, 1000); // Timer do próximo sinal
+            setInterval(updateSessionInfo, 5000); // Sessão a cada 5s
+            
+            // Análise automática mais frequente - a cada 2 minutos
+            setInterval(() => {
+                if (!isAnalyzing && !isMonitoring) {
+                    performAnalysis();
+                }
+            }, 120000);
+            
+            console.log('⏰ SISTEMA ATIVO - Sinais atualizando automaticamente!');
+        });
+    </script>
 </body>
 </html>
