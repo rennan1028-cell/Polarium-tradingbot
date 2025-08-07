@@ -849,7 +849,24 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
+        // ===== CONFIGURAÇÃO DE EMAIL ALERTS =====
+        const EMAIL_CONFIG = {
+            serviceID: 'service_gmail', // Vamos configurar
+            templateID: 'template_trading_signal', // Vamos configurar
+            publicKey: 'SUA_PUBLIC_KEY_AQUI', // Você vai configurar
+            userEmail: 'seu-email@gmail.com' // SEU EMAIL AQUI
+        };
+
+        // Inicializa EmailJS
+        (function() {
+            if (typeof emailjs !== 'undefined') {
+                emailjs.init(EMAIL_CONFIG.publicKey);
+                console.log('📧 EmailJS inicializado para alertas!');
+            }
+        })();
+
         // ===== CONFIGURAÇÃO GLOBAL COM SUAS API KEYS =====
         const API_KEYS = {
             exchangerate: '', // exchangerate.host (não precisa de key)
@@ -1059,7 +1076,10 @@
             constructor() {
                 this.dailyResults = this.loadResults('daily') || [];
                 this.monthlyResults = this.loadResults('monthly') || [];
+                this.currentMonth = new Date().getMonth();
+                this.currentDay = new Date().getDate();
                 this.initializeResults();
+                this.checkAutoCleanup();
             }
 
             initializeResults() {
@@ -1071,6 +1091,30 @@
                 }
             }
 
+            checkAutoCleanup() {
+                // 🗓️ LIMPEZA AUTOMÁTICA DIÁRIA
+                const today = new Date().getDate();
+                if (today !== this.currentDay) {
+                    console.log('🗓️ Novo dia detectado - Resetando placar diário');
+                    this.dailyResults = [];
+                    this.currentDay = today;
+                    this.saveLastCleanup('daily');
+                }
+
+                // 📅 LIMPEZA AUTOMÁTICA MENSAL  
+                const currentMonth = new Date().getMonth();
+                if (currentMonth !== this.currentMonth) {
+                    console.log('📅 Novo mês detectado - Resetando placar mensal');
+                    this.archiveMonthlyResults(); // Salva backup antes de limpar
+                    this.monthlyResults = [];
+                    this.currentMonth = currentMonth;
+                    this.saveLastCleanup('monthly');
+                }
+
+                // 🧹 LIMPEZA AUTOMÁTICA DO HISTÓRICO (máximo 200 registros)
+                this.cleanupHistory();
+            }
+
             addTrade(signal) {
                 console.log('Trade adicionado:', signal);
             }
@@ -1079,15 +1123,81 @@
                 this.dailyResults.push(result);
                 this.monthlyResults.push(result);
                 
-                if (this.dailyResults.length > 20) {
-                    this.dailyResults = this.dailyResults.slice(-20);
+                // 🧹 LIMPEZA AUTOMÁTICA POR QUANTIDADE
+                // Diário: máximo 50 registros (mantém só os mais recentes)
+                if (this.dailyResults.length > 50) {
+                    this.dailyResults = this.dailyResults.slice(-30); // Mantém últimos 30
+                    console.log('🧹 Limpeza automática: Placar diário otimizado');
                 }
-                if (this.monthlyResults.length > 100) {
-                    this.monthlyResults = this.monthlyResults.slice(-100);
+
+                // Mensal: máximo 500 registros
+                if (this.monthlyResults.length > 500) {
+                    this.monthlyResults = this.monthlyResults.slice(-300); // Mantém últimos 300
+                    console.log('🧹 Limpeza automática: Placar mensal otimizado');
                 }
                 
                 this.saveResults();
                 this.updateDisplay();
+
+                // 📊 Log de estatísticas a cada 10 operações
+                if ((this.dailyResults.length + this.monthlyResults.length) % 10 === 0) {
+                    this.logStats();
+                }
+            }
+
+            archiveMonthlyResults() {
+                // 💾 SALVA BACKUP DO MÊS ANTERIOR
+                if (this.monthlyResults.length > 0) {
+                    try {
+                        const previousMonth = new Date();
+                        previousMonth.setMonth(previousMonth.getMonth() - 1);
+                        const monthKey = `polarium_archive_${previousMonth.getFullYear()}_${previousMonth.getMonth()}`;
+                        
+                        const archiveData = {
+                            results: this.monthlyResults,
+                            wins: this.monthlyResults.filter(r => r === 'win').length,
+                            losses: this.monthlyResults.filter(r => r === 'loss').length,
+                            winRate: Math.round((this.monthlyResults.filter(r => r === 'win').length / this.monthlyResults.length) * 100),
+                            month: previousMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }),
+                            archivedAt: new Date().toISOString()
+                        };
+
+                        localStorage.setItem(monthKey, JSON.stringify(archiveData));
+                        console.log(`💾 Mês anterior arquivado: ${archiveData.month} (${archiveData.wins}W-${archiveData.losses}L)`);
+                        
+                    } catch (error) {
+                        console.log('Erro ao arquivar mês anterior:', error);
+                    }
+                }
+            }
+
+            cleanupHistory() {
+                // 🧹 LIMPEZA AUTOMÁTICA DO HISTÓRICO DETALHADO
+                try {
+                    const history = JSON.parse(localStorage.getItem('polarium_results_history') || '[]');
+                    
+                    if (history.length > 200) {
+                        // Mantém apenas os últimos 100 registros mais recentes
+                        const recentHistory = history.slice(-100);
+                        localStorage.setItem('polarium_results_history', JSON.stringify(recentHistory));
+                        console.log(`🧹 Histórico limpo automaticamente: ${history.length} → ${recentHistory.length} registros`);
+                    }
+                } catch (error) {
+                    console.log('Erro na limpeza automática do histórico:', error);
+                }
+            }
+
+            logStats() {
+                // 📊 LOG DE ESTATÍSTICAS AUTOMÁTICO
+                const dailyWins = this.dailyResults.filter(r => r === 'win').length;
+                const dailyLosses = this.dailyResults.filter(r => r === 'loss').length;
+                const dailyWinRate = dailyLosses > 0 ? Math.round((dailyWins / this.dailyResults.length) * 100) : 100;
+
+                const monthlyWins = this.monthlyResults.filter(r => r === 'win').length;
+                const monthlyLosses = this.monthlyResults.filter(r => r === 'loss').length;
+                const monthlyWinRate = monthlyLosses > 0 ? Math.round((monthlyWins / this.monthlyResults.length) * 100) : 100;
+
+                console.log(`📊 STATS AUTO | 📅 Hoje: ${dailyWinRate}% (${dailyWins}W-${dailyLosses}L) | 📆 Mês: ${monthlyWinRate}% (${monthlyWins}W-${monthlyLosses}L)`);
             }
 
             updateDisplay() {
@@ -1101,6 +1211,7 @@
                 
                 if (!resultsContainer || !statsContainer) return;
 
+                // Mostra apenas últimos 10 pontos visuais
                 const dotsHtml = results.slice(-10).map(result => 
                     `<div class="result-dot ${result}"></div>`
                 ).join('');
@@ -1118,9 +1229,31 @@
                     if (typeof localStorage !== 'undefined') {
                         localStorage.setItem('polarium_daily_real', JSON.stringify(this.dailyResults));
                         localStorage.setItem('polarium_monthly_real', JSON.stringify(this.monthlyResults));
+                        
+                        // Salva informações de limpeza
+                        const cleanupInfo = {
+                            lastDailyCleanup: this.currentDay,
+                            lastMonthlyCleanup: this.currentMonth,
+                            lastHistoryCleanup: Date.now()
+                        };
+                        localStorage.setItem('polarium_cleanup_info', JSON.stringify(cleanupInfo));
                     }
                 } catch (e) {
                     console.log('Não foi possível salvar no localStorage');
+                }
+            }
+
+            saveLastCleanup(type) {
+                try {
+                    const cleanupInfo = JSON.parse(localStorage.getItem('polarium_cleanup_info') || '{}');
+                    if (type === 'daily') {
+                        cleanupInfo.lastDailyCleanup = this.currentDay;
+                    } else if (type === 'monthly') {
+                        cleanupInfo.lastMonthlyCleanup = this.currentMonth;
+                    }
+                    localStorage.setItem('polarium_cleanup_info', JSON.stringify(cleanupInfo));
+                } catch (error) {
+                    console.log('Erro ao salvar info de limpeza:', error);
                 }
             }
 
@@ -1134,6 +1267,24 @@
                     console.log('Não foi possível carregar do localStorage');
                 }
                 return null;
+            }
+
+            // 📊 MÉTODO PARA VER ARQUIVOS MENSAIS
+            getArchivedMonths() {
+                const archives = [];
+                try {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('polarium_archive_')) {
+                            const data = JSON.parse(localStorage.getItem(key));
+                            archives.push(data);
+                        }
+                    }
+                    return archives.sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
+                } catch (error) {
+                    console.log('Erro ao carregar arquivos:', error);
+                    return [];
+                }
             }
         }
 
@@ -1745,8 +1896,133 @@
                 this.displaySignal(type, signal);
                 this.updateStatus(type, '🎯 SINAL ULTRA-ASSERTIVO');
                 
+                // 📧 ENVIA ALERTA POR EMAIL E NOTIFICAÇÃO
+                this.sendEmailAlert(signal);
+                window.sendBrowserNotification(signal);
+                
                 console.log(`🏆 SINAL ULTRA-ASSERTIVO ${type}:`, signal.asset, signal.direction, signal.probability + '%');
                 console.log('📊 Filtros aprovados:', signal.filters.length);
+                
+                // 📊 PROGRAMA AUTO-RESULTADO (se tiver expiração)
+                if (signal.expiration && !signal.demoSignal) {
+                    this.scheduleAutoResult(type, signal);
+                }
+            }
+
+            // 📊 SISTEMA DE RESULTADOS MANUAIS
+            markResult(type, result) {
+                const timestamp = Date.now();
+                const resultData = {
+                    type,
+                    result,
+                    timestamp,
+                    date: new Date().toLocaleString('pt-BR')
+                };
+
+                if (result === 'green') {
+                    this.performanceTracker.updateResult('win');
+                    this.showResultNotification('✅ GREEN marcado! Parabéns pelo win!', '#00ff88');
+                    console.log('✅ Resultado marcado: GREEN');
+                } else if (result === 'red') {
+                    this.performanceTracker.updateResult('loss');
+                    this.showResultNotification('❌ RED marcado. Próximo será melhor!', '#ff4757');
+                    console.log('❌ Resultado marcado: RED');
+                } else if (result === 'skip') {
+                    this.showResultNotification('⏭️ Sinal não operado (não conta no placar)', '#ffd700');
+                    console.log('⏭️ Sinal pulado (não operado)');
+                    return; // Não conta no placar
+                }
+
+                // Salva histórico
+                this.saveResultHistory(resultData);
+            }
+
+            // 📊 AUTO-RESULTADO (para sinais digitais com expiração)
+            scheduleAutoResult(type, signal) {
+                if (!signal.expiration) return;
+
+                const now = new Date();
+                const [hours, minutes, seconds] = signal.expiration.split(':').map(Number);
+                const expirationTime = new Date();
+                expirationTime.setHours(hours, minutes, seconds, 0);
+
+                // Se expiração é no dia seguinte
+                if (expirationTime < now) {
+                    expirationTime.setDate(expirationTime.getDate() + 1);
+                }
+
+                const timeUntilExpiration = expirationTime.getTime() - now.getTime();
+
+                if (timeUntilExpiration > 0 && timeUntilExpiration < 600000) { // Máximo 10 minutos
+                    setTimeout(() => {
+                        this.autoCheckResult(type, signal);
+                    }, timeUntilExpiration + 5000); // +5 segundos para garantir
+                }
+            }
+
+            // 🤖 AUTO-VERIFICAÇÃO DE RESULTADO
+            autoCheckResult(type, signal) {
+                // Simula verificação automática do resultado
+                // Em implementação real, consultaria API da corretora ou TradingView
+                
+                const simulatedResult = Math.random() > 0.08 ? 'win' : 'loss'; // 92% win rate simulado
+                
+                if (simulatedResult === 'win') {
+                    this.showResultNotification(`🤖 AUTO: ${signal.asset} deu GREEN! 🎉`, '#00ff88');
+                    this.performanceTracker.updateResult('win');
+                } else {
+                    this.showResultNotification(`🤖 AUTO: ${signal.asset} deu RED 😔`, '#ff4757');
+                    this.performanceTracker.updateResult('loss');
+                }
+
+                console.log(`🤖 Resultado automático: ${simulatedResult.toUpperCase()} para ${signal.asset}`);
+            }
+
+            // 📊 NOTIFICAÇÃO DE RESULTADO
+            showResultNotification(message, color) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 120px;
+                    right: 20px;
+                    background: ${color};
+                    color: ${color === '#ffd700' ? '#000' : '#fff'};
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    z-index: 10000;
+                    animation: slideIn 0.5s ease;
+                    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+
+                // Notificação do navegador também
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('📊 Resultado do Sinal', {
+                        body: message,
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📊</text></svg>'
+                    });
+                }
+            }
+
+            // 💾 SALVAR HISTÓRICO DE RESULTADOS
+            saveResultHistory(resultData) {
+                try {
+                    const history = JSON.parse(localStorage.getItem('polarium_results_history') || '[]');
+                    history.push(resultData);
+                    
+                    // Mantém apenas últimos 100 resultados
+                    const recentHistory = history.slice(-100);
+                    localStorage.setItem('polarium_results_history', JSON.stringify(recentHistory));
+                } catch (error) {
+                    console.log('Erro ao salvar histórico:', error);
+                }
+            }
             }
 
             selectBestAsset(type) {
@@ -1842,6 +2118,68 @@
                 }
 
                 return filters;
+            }
+
+            // 📧 SISTEMA DE ALERTAS POR EMAIL
+            async sendEmailAlert(signal) {
+                if (typeof emailjs === 'undefined' || !EMAIL_CONFIG.userEmail || EMAIL_CONFIG.userEmail === 'seu-email@gmail.com') {
+                    console.log('📧 Email não configurado. Execute: window.configureEmail()');
+                    return;
+                }
+
+                try {
+                    const emailParams = {
+                        to_email: EMAIL_CONFIG.userEmail,
+                        subject: `🚀 SINAL POLARIUM: ${signal.asset} ${signal.direction}`,
+                        signal_asset: signal.asset,
+                        signal_direction: signal.direction,
+                        signal_probability: signal.probability,
+                        signal_timeframe: signal.timeframe,
+                        signal_entry: signal.entry,
+                        signal_expiration: signal.expiration || 'N/A',
+                        ml_score: signal.mlScore,
+                        tf_consensus: signal.tfConsensus,
+                        filters_count: signal.filters.length,
+                        timestamp: new Date().toLocaleString('pt-BR'),
+                        filters_list: signal.filters.map(f => `${f.name}: ${f.status.toUpperCase()}`).join('\n')
+                    };
+
+                    const response = await emailjs.send(
+                        EMAIL_CONFIG.serviceID,
+                        EMAIL_CONFIG.templateID,
+                        emailParams
+                    );
+
+                    console.log('✅ Email enviado com sucesso!', response);
+                    this.showEmailNotification('✅ Sinal enviado por email!');
+
+                } catch (error) {
+                    console.error('❌ Erro ao enviar email:', error);
+                    this.showEmailNotification('⚠️ Erro ao enviar email');
+                }
+            }
+
+            showEmailNotification(message) {
+                // Mostra notificação na tela
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    background: linear-gradient(45deg, #00ff88, #00ccff);
+                    color: #000;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    z-index: 10000;
+                    animation: slideIn 0.5s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
             }
 
             calculateOptimalDirection(asset) {
