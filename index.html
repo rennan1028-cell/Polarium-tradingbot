@@ -944,8 +944,12 @@
                     <div class="detail-value" id="expirationTime">14:28:15</div>
                 </div>
                 <div class="detail-box">
-                    <div class="detail-label">Neural Score</div>
-                    <div class="detail-value">PERFEITO</div>
+                    <div class="detail-label">Tipo de Ativo</div>
+                    <div class="detail-value" id="assetType">DIGITAL</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Lucro</div>
+                    <div class="detail-value" id="assetProfit">88%</div>
                 </div>
             </div>
 
@@ -1066,16 +1070,80 @@
         let currentOperation = null;
         let stats = { green: 15, red: 1, streak: 8 };
 
-        // Assets expandidos com mais dados
+        // Assets expandidos com mais dados - Polarium Style
         const assets = {
-            'EUR/USD': { price: 1.0875, volatility: 'ALTA', trend: 'CALL', correlation: 0.94, strength: 96 },
-            'GBP/USD': { price: 1.2634, volatility: 'EXTREMA', trend: 'PUT', correlation: 0.91, strength: 98 },
-            'USD/JPY': { price: 149.23, volatility: 'ALTA', trend: 'CALL', correlation: 0.87, strength: 94 },
-            'AUD/USD': { price: 0.6789, volatility: 'MÉDIA', trend: 'PUT', correlation: 0.15, strength: 78 },
-            'GBP/JPY': { price: 188.45, volatility: 'EXTREMA', trend: 'CALL', correlation: 0.96, strength: 99 },
-            'EUR/GBP': { price: 0.8567, volatility: 'ALTA', trend: 'PUT', correlation: -0.52, strength: 89 },
-            'CHF/JPY': { price: 165.42, volatility: 'ALTA', trend: 'CALL', correlation: 0.83, strength: 92 },
-            'CAD/USD': { price: 0.7456, volatility: 'MÉDIA', trend: 'PUT', correlation: 0.34, strength: 81 }
+            'EUR/USD': { 
+                price: 1.0875, 
+                volatility: 'ALTA', 
+                trend: 'CALL', 
+                correlation: 0.94, 
+                strength: 96,
+                type: 'DIGITAL',
+                lucro: '88%'
+            },
+            'GBP/USD': { 
+                price: 1.2634, 
+                volatility: 'EXTREMA', 
+                trend: 'PUT', 
+                correlation: 0.91, 
+                strength: 98,
+                type: 'DIGITAL',
+                lucro: '87%'
+            },
+            'USD/JPY': { 
+                price: 149.23, 
+                volatility: 'ALTA', 
+                trend: 'CALL', 
+                correlation: 0.87, 
+                strength: 94,
+                type: 'DIGITAL',
+                lucro: '85%'
+            },
+            'AUD/USD': { 
+                price: 0.6789, 
+                volatility: 'MÉDIA', 
+                trend: 'PUT', 
+                correlation: 0.15, 
+                strength: 78,
+                type: 'DIGITAL',
+                lucro: '84%'
+            },
+            'GBP/JPY': { 
+                price: 188.45, 
+                volatility: 'EXTREMA', 
+                trend: 'CALL', 
+                correlation: 0.96, 
+                strength: 99,
+                type: 'DIGITAL',
+                lucro: '89%'
+            },
+            'EUR/GBP': { 
+                price: 0.8567, 
+                volatility: 'ALTA', 
+                trend: 'PUT', 
+                correlation: -0.52, 
+                strength: 89,
+                type: 'DIGITAL',
+                lucro: '86%'
+            },
+            'EUR/USD (OTC)': { 
+                price: 1.0912, 
+                volatility: 'ALTA', 
+                trend: 'CALL', 
+                correlation: 0.83, 
+                strength: 92,
+                type: 'OTC',
+                lucro: '90%'
+            },
+            'GBP/USD (OTC)': { 
+                price: 1.2687, 
+                volatility: 'EXTREMA', 
+                trend: 'PUT', 
+                correlation: 0.89, 
+                strength: 95,
+                type: 'OTC',
+                lucro: '87%'
+            }
         };
 
         // Criar partículas flutuantes
@@ -1410,8 +1478,8 @@
             
             currentAsset = bestAsset;
             
-            document.getElementById('selectedAsset').textContent = `${bestAsset} Quantum`;
-            document.getElementById('signalStatus').textContent = 'IA NEURAL ATIVA';
+            document.getElementById('selectedAsset').textContent = `${bestAsset} ${assetData.type}`;
+            document.getElementById('signalStatus').textContent = `IA NEURAL ${assetData.type}`;
             document.getElementById('signalStatus').className = 'ai-selected';
             
             document.getElementById('signalCard').className = 'signal-card';
@@ -1423,7 +1491,7 @@
 
             const now = new Date();
             const entryTime = now.toLocaleTimeString('pt-BR').substring(0, 8);
-            const expirationTime = calculateExpiration(entryTime);
+            const expirationTime = calculatePolariumExpiration(entryTime);
 
             document.getElementById('entryTime').textContent = entryTime;
             document.getElementById('expirationTime').textContent = expirationTime;
@@ -1439,16 +1507,49 @@
             const finalProbability = Math.min(99.9, baseProbability + volatilityBonus + strengthBonus + correlationBonus + Math.random() * 2);
             document.getElementById('probability').textContent = `${finalProbability.toFixed(1)}%`;
 
+            // Atualizar informações do ativo
+            document.getElementById('assetType').textContent = assetData.type;
+            document.getElementById('assetProfit').textContent = assetData.lucro;
+            
+            // Mudar cor baseado no tipo
+            const assetTypeElement = document.getElementById('assetType');
+            if (assetData.type === 'DIGITAL') {
+                assetTypeElement.style.color = '#00ff88';
+            } else if (assetData.type === 'OTC') {
+                assetTypeElement.style.color = '#ff9900';
+            } else {
+                assetTypeElement.style.color = '#0099ff';
+            }
+
             nextSignalCountdown = 180 + Math.floor(Math.random() * 120); // 3-5 minutos
             
             console.log(`🧠 Novo sinal neural: ${bestAsset} ${direction} - ${finalProbability.toFixed(1)}% (Score: ${assetData.strength})`);
         }
 
-        // Calcular expiração
-        function calculateExpiration(entryTime) {
-            const entry = new Date(`2024-01-01 ${entryTime}`);
-            const expiration = new Date(entry.getTime() + (5 * 60 * 1000));
-            return expiration.toLocaleTimeString('pt-BR').substring(0, 8);
+        // Calcular expiração correta para Polarium (múltiplos de 5 minutos)
+        function calculatePolariumExpiration(entryTime) {
+            const [hour, minute, second] = entryTime.split(':').map(Number);
+            
+            // Para ativos digitais, sempre expira em múltiplos de 5 minutos
+            let expirationMinute;
+            
+            if (minute < 5) expirationMinute = 5;
+            else if (minute < 10) expirationMinute = 10;
+            else if (minute < 15) expirationMinute = 15;
+            else if (minute < 20) expirationMinute = 20;
+            else if (minute < 25) expirationMinute = 25;
+            else if (minute < 30) expirationMinute = 30;
+            else if (minute < 35) expirationMinute = 35;
+            else if (minute < 40) expirationMinute = 40;
+            else if (minute < 45) expirationMinute = 45;
+            else if (minute < 50) expirationMinute = 50;
+            else if (minute < 55) expirationMinute = 55;
+            else {
+                // Se passou de 55, vai para a próxima hora
+                return `${(hour + 1).toString().padStart(2, '0')}:00:00`;
+            }
+            
+            return `${hour.toString().padStart(2, '0')}:${expirationMinute.toString().padStart(2, '0')}:00`;
         }
 
         // Atualizar countdown
@@ -1680,9 +1781,9 @@
 
         // Inicialização completa
         document.addEventListener('DOMContentLoaded', function() {
-            // Configurar horários corretos
+            // Configurar horários corretos com sistema Polarium
             const currentEntry = document.getElementById('entryTime').textContent;
-            const correctExpiration = calculateExpiration(currentEntry);
+            const correctExpiration = calculatePolariumExpiration(currentEntry);
             document.getElementById('expirationTime').textContent = correctExpiration;
             
             // Iniciar sistemas
@@ -1706,9 +1807,12 @@
             updateAdvancedMetrics();
             updateStats();
             
-            console.log('🧠 IA ULTRA ASSERTIVA v3.0 PRO INICIADA!');
-            console.log('🎯 NOVOS RECURSOS v3.0:');
-            console.log('✨ Sistema Neural Avançado');
+            console.log('🧠 IA ULTRA ASSERTIVA v3.0 PRO - POLARIUM EDITION!');
+            console.log('🎯 RECURSOS POLARIUM v3.0:');
+            console.log('✨ Sistema Neural Polarium');
+            console.log('⏰ Expiração em Horários Redondos (5min)');
+            console.log('🎪 Ativos DIGITAL e OTC');
+            console.log('📊 Percentual de Lucro Real');
             console.log('🔥 Contador de Streak');
             console.log('🎨 Interface Premium Animada');
             console.log('🌟 Partículas Flutuantes');
@@ -1716,10 +1820,7 @@
             console.log('🎵 Sistema de Som Avançado');
             console.log('💾 Backup Automático');
             console.log('⚡ Monitor de Performance');
-            console.log('🧮 8 Pares de Moedas');
-            console.log('📊 Análise de Força Neural');
-            console.log('🎪 Animações Profissionais');
-            console.log('📱 Responsividade Total');
+            console.log('📈 Análise Polarium Style');
             
             // Som de inicialização
             setTimeout(() => {
